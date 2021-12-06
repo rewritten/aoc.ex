@@ -6,7 +6,6 @@ data =
   |> String.trim()
   |> String.to_charlist()
   |> Enum.frequencies()
-  |> Map.delete(?,)
 
 gens = for c <- ?0..?8, do: Map.get(data, c, 0)
 
