@@ -3,7 +3,6 @@
 data =
   "input/2021/6.txt"
   |> File.read!()
-  |> String.trim()
   |> String.to_charlist()
   |> Enum.frequencies()
 
