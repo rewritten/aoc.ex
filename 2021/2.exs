@@ -1,15 +1,10 @@
 #! /usr/bin/env elixir
 
-directions =
-  "2021/2.txt"
-  |> File.stream!()
-  |> Stream.map(fn line ->
-    line
-    |> String.split()
-    |> update_in([Access.at(1)], &String.to_integer/1)
-  end)
-
-directions
+"input/2021/2.txt"
+|> File.read!()
+|> String.split()
+|> Enum.chunk_every(2)
+|> Enum.map(fn [d, n] -> [d, String.to_integer(n)] end)
 |> Enum.reduce([0, 0], fn
   ["up", n], [hor, dep] -> [hor, dep - n]
   ["down", n], [hor, dep] -> [hor, dep + n]
@@ -18,7 +13,11 @@ end)
 |> then(fn [hor, dep] -> hor * dep end)
 |> IO.inspect(label: "part 1")
 
-directions
+"input/2021/2.txt"
+|> File.read!()
+|> String.split()
+|> Enum.chunk_every(2)
+|> Enum.map(fn [d, n] -> [d, String.to_integer(n)] end)
 |> Enum.reduce([0, 0, 0], fn
   ["up", n], [hor, dep, aim] -> [hor, dep, aim - n]
   ["down", n], [hor, dep, aim] -> [hor, dep, aim + n]

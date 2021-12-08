@@ -35,7 +35,7 @@ end
 {:ok, simple_submarine} = Submarine.new()
 {:ok, aiming_submarine} = Submarine.new()
 
-for line <- File.stream!("2021/2.txt") do
+for line <- File.stream!("input/2021/2.txt") do
   Submarine.command(simple_submarine, :move, String.trim(line))
   Submarine.command(aiming_submarine, :aim, String.trim(line))
 end
