@@ -39,27 +39,22 @@ loop =
 
     {map, []}
     |> Stream.unfold(fn {temp, flashed} ->
-      # step 2: if a number is > 9 and has not already flashed, mark it as flashing
-      to_flash = for {k, v} when v > ?9 <- temp, k not in flashed, do: k
+      # step 2: if a number is > 9 and has not already flashed, flash it
+      case Enum.find(temp, fn {k, v} -> v > ?9 && k not in flashed end) do
+        nil ->
+          nil
 
-      if !Enum.empty?(to_flash) do
-        # display_highlight.(temp, to_flash, flashed)
+        {{x, y}, _} ->
+          m =
+            for i <- (x - 1)..(x + 1),
+                i in 0..9,
+                j <- (y - 1)..(y + 1),
+                j in 0..9,
+                reduce: temp do
+              m -> Map.update!(m, {i, j}, &(&1 + 1))
+            end
 
-        # step 3: increase neighbors of flashing numbers
-        new_map =
-          for {x, y} <- to_flash,
-              i <- -1..1,
-              j <- -1..1,
-              {i, j} != {0, 0},
-              (x + i) in 0..9,
-              (y + j) in 0..9,
-              z = {x + i, y + j},
-              z not in flashed,
-              reduce: temp do
-            m -> Map.update!(m, z, &(&1 + 1))
-          end
-
-        {new_map, {new_map, to_flash ++ flashed}}
+          {m, {m, [{x, y} | flashed]}}
       end
     end)
     |> Enum.to_list()
