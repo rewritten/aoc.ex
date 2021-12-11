@@ -1,10 +1,13 @@
 #! /usr/bin/env elixir
 
-"input/2021/2.txt"
-|> File.read!()
-|> String.split()
-|> Enum.chunk_every(2)
-|> Enum.map(fn [d, n] -> [d, String.to_integer(n)] end)
+data =
+  "input/2021/2.txt"
+  |> File.read!()
+  |> String.split()
+  |> Enum.chunk_every(2)
+  |> Enum.map(fn [d, n] -> [d, String.to_integer(n)] end)
+
+data
 |> Enum.reduce([0, 0], fn
   ["up", n], [hor, dep] -> [hor, dep - n]
   ["down", n], [hor, dep] -> [hor, dep + n]
@@ -13,11 +16,7 @@ end)
 |> then(fn [hor, dep] -> hor * dep end)
 |> IO.inspect(label: "part 1")
 
-"input/2021/2.txt"
-|> File.read!()
-|> String.split()
-|> Enum.chunk_every(2)
-|> Enum.map(fn [d, n] -> [d, String.to_integer(n)] end)
+data
 |> Enum.reduce([0, 0, 0], fn
   ["up", n], [hor, dep, aim] -> [hor, dep, aim - n]
   ["down", n], [hor, dep, aim] -> [hor, dep, aim + n]

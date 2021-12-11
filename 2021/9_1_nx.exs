@@ -14,11 +14,12 @@ t =
 for i <- 1..100,
     j <- 1..100,
     sub = t[[(i - 1)..(i + 1), (j - 1)..(j + 1)]],
-    sub[1][1] < sub[0][1],
-    sub[1][1] < sub[1][0],
-    sub[1][1] < sub[2][1],
-    sub[1][1] < sub[1][2] do
-  Nx.to_number(sub[1][1]) - ?0 + 1
+    pivot = sub[1][1],
+    pivot < sub[0][1],
+    pivot < sub[1][0],
+    pivot < sub[2][1],
+    pivot < sub[1][2] do
+  Nx.to_number(pivot) - ?/
 end
 |> Enum.sum()
 |> IO.inspect(label: "part 1")

@@ -7,6 +7,7 @@ data =
   |> Enum.map(&String.to_integer/1)
   |> Enum.sort()
 
+# Check optimal value around median
 data
 |> Enum.at(div(length(data), 2) - 1)
 |> then(&[&1, &1 + 1])
@@ -18,6 +19,7 @@ end)
 |> Enum.min()
 |> IO.inspect(label: "Part 1")
 
+# Check optimal value around average
 data
 |> Enum.sum()
 |> div(length(data))

@@ -1,9 +1,12 @@
 #! /usr/bin/env elixir
 
-"input/2021/3.txt"
-|> File.read!()
-|> String.split("\n", trim: true)
-|> Enum.map(&String.to_charlist/1)
+data =
+  "input/2021/3.txt"
+  |> File.read!()
+  |> String.split("\n", trim: true)
+  |> Enum.map(&String.to_charlist/1)
+
+data
 |> Enum.zip_with(& &1)
 |> Enum.map(fn col ->
   col |> Enum.frequencies() |> Enum.sort_by(fn {_, v} -> v end) |> Enum.map(fn {k, _} -> k end)
@@ -13,10 +16,7 @@ end)
 |> then(fn [e, d] -> e * d end)
 |> IO.inspect(label: "part 1")
 
-"input/2021/3.txt"
-|> File.read!()
-|> String.split("\n", trim: true)
-|> Enum.map(&String.to_charlist/1)
+data
 |> then(&fn -> {&1, &1} end)
 |> Stream.resource(
   fn {lows, highs} ->

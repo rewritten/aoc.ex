@@ -2,20 +2,22 @@
 
 Mix.install([:libgraph])
 
-add_edge = fn g, from, to ->
-  if Graph.has_vertex?(g, to), do: Graph.add_edge(g, from, to), else: g
+add_edge_if_ok = fn from, to ->
+  &if Graph.has_vertex?(&1, to), do: Graph.add_edge(&1, from, to), else: &1
 end
 
+lines = "input/2021/9.txt" |> File.read!() |> String.split()
+
 graph =
-  for {line, i} <- "input/2021/9.txt" |> File.read!() |> String.split() |> Enum.with_index(),
+  for {line, i} <- Enum.with_index(lines),
       {c, j} <- line |> String.to_charlist() |> Enum.with_index(),
       c != ?9,
       reduce: Graph.new(type: :undirected) do
     g ->
       g
       |> Graph.add_vertex({i, j})
-      |> then(&add_edge.(&1, {i, j}, {i, j - 1}))
-      |> then(&add_edge.(&1, {i, j}, {i - 1, j}))
+      |> then(add_edge_if_ok.({i, j}, {i, j - 1}))
+      |> then(add_edge_if_ok.({i, j}, {i - 1, j}))
   end
 
 graph
