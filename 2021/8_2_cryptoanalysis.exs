@@ -1,6 +1,14 @@
 #! /usr/bin/env elixir
 
 # Use frequency analysis to find the transposition key
+digits = ['abcefg', 'cf', 'acdeg', 'acdfg', 'bcdf', 'abdfg', 'abdefg', 'acf', 'abcdefg', 'abcdfg']
+freqs = digits |> List.flatten() |> Enum.frequencies()
+
+orig =
+  digits
+  |> Enum.map(fn d -> d |> Enum.map(&Map.get(freqs, &1)) |> Enum.sort() end)
+  |> Enum.with_index()
+  |> Map.new()
 
 "input/2021/8.txt"
 |> File.read!()
@@ -12,20 +20,8 @@
   freqs = digits |> List.flatten() |> Enum.frequencies()
 
   input
-  |> Enum.map(fn d ->
-    case d |> Enum.map(&Map.get(freqs, &1)) |> Enum.sort() do
-      [4, 6, 7, 8, 8, 9] -> 0
-      [8, 9] -> 1
-      [4, 7, 7, 8, 8] -> 2
-      [7, 7, 8, 8, 9] -> 3
-      [6, 7, 8, 9] -> 4
-      [6, 7, 7, 8, 9] -> 5
-      [4, 6, 7, 7, 8, 9] -> 6
-      [8, 8, 9] -> 7
-      [4, 6, 7, 7, 8, 8, 9] -> 8
-      [6, 7, 7, 8, 8, 9] -> 9
-    end
-  end)
+  |> Enum.map(fn d -> d |> Enum.map(&Map.get(freqs, &1)) |> Enum.sort() end)
+  |> Enum.map(&Map.get(orig, &1))
   |> Integer.undigits()
 end)
 |> Enum.sum()

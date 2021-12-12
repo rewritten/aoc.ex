@@ -28,8 +28,9 @@ loop =
   end)
 
 loop
+|> Stream.drop(1)
 |> Stream.map(&Enum.count(&1, fn {_, v} -> v == ?0 end))
-|> Stream.take(101)
+|> Stream.take(100)
 |> Enum.sum()
 |> IO.inspect(label: "part 1")
 

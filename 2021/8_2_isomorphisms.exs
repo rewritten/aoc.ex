@@ -1,6 +1,17 @@
 #! /usr/bin/env elixir
 
 # Use graph isomorphisms.
+digits =
+  ['abcefg', 'cf', 'acdeg', 'acdfg', 'bcdf', 'abdfg', 'abdefg', 'acf', 'abcdefg', 'abcdfg']
+  |> Enum.map(&MapSet.new/1)
+
+subsets = Enum.map(digits, fn digit -> Enum.count(digits, &MapSet.subset?(&1, digit)) end)
+supersets = Enum.map(digits, fn digit -> Enum.count(digits, &MapSet.subset?(digit, &1)) end)
+
+orig =
+  [subsets, supersets, 0..9]
+  |> Enum.zip_with(fn [sub, sup, i] -> {{sub, sup}, i} end)
+  |> Map.new()
 
 "input/2021/8.txt"
 |> File.read!()
@@ -15,18 +26,7 @@
     subsets = Enum.count(digits, &MapSet.subset?(&1, digit))
     supersets = Enum.count(digits, &MapSet.subset?(digit, &1))
 
-    case {subsets, supersets} do
-      {3, 2} -> 0
-      {1, 7} -> 1
-      {1, 2} -> 2
-      {3, 3} -> 3
-      {2, 3} -> 4
-      {1, 4} -> 5
-      {2, 2} -> 6
-      {2, 5} -> 7
-      {10, 1} -> 8
-      {6, 2} -> 9
-    end
+    Map.get(orig, {subsets, supersets})
   end)
   |> Integer.undigits()
 end)

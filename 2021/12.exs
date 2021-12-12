@@ -20,8 +20,7 @@ data =
         do: [n, h | t]
 end)
 |> Stream.chunk_every(2, 1)
-|> Enum.find(&match?([a, a], &1))
-|> Enum.at(0)
+|> Enum.find_value(fn [a, b] -> if a == b, do: a end)
 |> length()
 |> IO.inspect(label: "part 1")
 
@@ -36,7 +35,6 @@ end)
         do: {[n, h | t], can_revisit && String.downcase(n) not in t}
 end)
 |> Stream.chunk_every(2, 1)
-|> Enum.find(&match?([a, a], &1))
-|> Enum.at(0)
+|> Enum.find_value(fn [a, b] -> if a == b, do: a end)
 |> length()
 |> IO.inspect(label: "part 2")

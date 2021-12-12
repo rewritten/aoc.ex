@@ -2,11 +2,6 @@
 
 [nums | boards] = "input/2021/4.txt" |> File.read!() |> String.split("\n\n", trim: true)
 
-nums =
-  nums
-  |> String.split(",")
-  |> Enum.map(&String.to_integer/1)
-
 boards =
   for board <- boards do
     board = board |> String.split() |> Enum.map(&String.to_integer/1)
@@ -15,21 +10,17 @@ boards =
     Enum.map(cols ++ rows, &MapSet.new/1)
   end
 
-game =
-  {nums, boards, nil, []}
-  |> Stream.iterate(fn {[number | rest], playing, _last_played, _last_winners} ->
-    playing =
-      for board <- playing do
-        for line <- board, do: MapSet.delete(line, number)
-      end
-
-    {new_winners, still_playing} =
-      Enum.split_with(playing, fn board -> Enum.any?(board, &Enum.empty?/1) end)
-
-    {rest, still_playing, number, new_winners}
+{game, _} =
+  nums
+  |> String.split(",")
+  |> Enum.map(&String.to_integer/1)
+  |> Enum.flat_map_reduce(boards, fn n, boards ->
+    boards = for b <- boards, do: for(line <- b, do: MapSet.delete(line, n))
+    {winners, playing} = Enum.split_with(boards, fn board -> Enum.any?(board, &Enum.empty?/1) end)
+    {for(w <- winners, do: {n, w}), playing}
   end)
 
-{_, _, played, [winner]} = Enum.find(game, &match?({_, _, _, [_]}, &1))
+{played, winner} = hd(game)
 
 winner
 |> Enum.reduce(&MapSet.union/2)
@@ -37,7 +28,7 @@ winner
 |> Kernel.*(played)
 |> IO.inspect(label: "part 1")
 
-{_, _, played, [loser]} = Enum.find(game, &match?({_, [], _, [_]}, &1))
+{played, loser} = List.last(game)
 
 loser
 |> Enum.reduce(&MapSet.union/2)

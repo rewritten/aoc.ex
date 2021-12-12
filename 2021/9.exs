@@ -13,13 +13,12 @@ for {{i, j}, c} <- input,
     Map.get(input, {i, j + 1}, ?9) > c,
     Map.get(input, {i, j - 1}, ?9) > c,
     Map.get(input, {i + 1, j}, ?9) > c,
-    Map.get(input, {i - 1, j}, ?9) > c,
-    reduce: 0 do
-  acc -> acc + c - ?0 + 1
+    Map.get(input, {i - 1, j}, ?9) > c do
+  c - ?0 + 1
 end
+|> Enum.sum()
 |> IO.inspect(label: "part 1")
 
-dirs = [{0, 1}, {0, -1}, {1, 0}, {-1, 0}]
 # BFS to find the connected components
 {input, %{}, []}
 |> Stream.unfold(fn {space, component, keys} ->
@@ -30,7 +29,7 @@ dirs = [{0, 1}, {0, -1}, {1, 0}, {-1, 0}]
   else
     {nil,
      {rest, Map.merge(component, neigh),
-      Enum.flat_map(neigh, fn {{i, j}, _} -> for {x, y} <- dirs, do: {i + x, j + y} end)}}
+      Enum.flat_map(neigh, fn {{i, j}, _} -> [{i, j + 1}, {i, j - 1}, {i + 1, j}, {i - 1, j}] end)}}
   end
 end)
 |> Enum.reject(&is_nil/1)
