@@ -43,6 +43,7 @@ defmodule Dijkstra do
         {{current_cost, node}, {queue, visited}}
       end
     end)
+    |> Stream.drop(1)
     |> Stream.reject(&is_nil/1)
     |> Enum.find(finish_condition)
   end
