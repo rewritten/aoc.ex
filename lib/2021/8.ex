@@ -17,20 +17,19 @@ defmodule Aoc.SevenSegmentSearch do
   def part_2(data) do
     digits = ~w[ abcefg cf acdeg acdfg bcdf abdfg abdefg acf abcdefg abcdfg ]c
     freqs = digits |> List.flatten() |> Enum.frequencies()
-    orig = for encoded <- digits, do: fingerprint(encoded, freqs)
+    original = for digit <- digits, do: digit |> Enum.map(&Map.get(freqs, &1)) |> Enum.sort()
 
     data
     |> Enum.map(fn {digits, input} ->
       local_frequencies = digits |> List.flatten() |> Enum.frequencies()
 
-      for digit <- input, print = fingerprint(digit, local_frequencies) do
-        Enum.find_index(orig, &match?(^print, &1))
-      end
+      input
+      |> Enum.map(fn digit ->
+        print = digit |> Enum.map(&Map.get(local_frequencies, &1)) |> Enum.sort()
+        Enum.find_index(original, &match?(^print, &1))
+      end)
       |> Integer.undigits()
     end)
     |> Enum.sum()
   end
-
-  defp fingerprint(digit, frequencies),
-    do: digit |> Enum.map(&Map.get(frequencies, &1)) |> Enum.sort()
 end

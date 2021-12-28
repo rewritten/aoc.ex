@@ -22,9 +22,9 @@ defmodule Aoc.SmokeBasin do
     |> Enum.reduce(&Kernel.*/2)
   end
 
-  def flood({space, _, _}) when map_size(space) == 0, do: nil
+  defp flood({space, _, _}) when map_size(space) == 0, do: nil
 
-  def flood({space, component, frontier}) do
+  defp flood({space, component, frontier}) do
     case Map.split(space, frontier) do
       {empty, _} when map_size(empty) == 0 ->
         {k, _} = Enum.at(space, 0)

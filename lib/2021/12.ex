@@ -3,81 +3,41 @@ defmodule Aoc.PassagePathing do
     text
     |> String.split(~r"\W+", trim: true)
     |> Enum.chunk_every(2)
-    |> Enum.flat_map(&[&1, Enum.reverse(&1)])
-    |> Enum.reduce(%{}, fn [a, b], acc -> Map.update(acc, a, [b], &[b | &1]) end)
+    |> Enum.flat_map(fn [a, b] -> [%{a => [b]}, %{b => [a]}] end)
+    |> Enum.reduce(&Map.merge(&1, &2, fn _, v, w -> v ++ w end))
     |> Map.map(fn {_, v} -> v -- ["start"] end)
   end
 
   def part_1(data) do
-    [["start"]]
-    |> Stream.iterate(fn paths ->
-      {finished, running} = Enum.split_with(paths, &match?(["end" | _], &1))
-
-      finished ++
-        for [h | t] <- running,
-            n <- Map.get(data, h),
-            n not in t or n == String.upcase(n),
-            do: [n, h | t]
-    end)
-    |> Stream.chunk_every(2, 1)
-    |> Enum.find(&match?([a, a], &1))
-    |> hd()
-    |> length()
+    :queue.from_list([["start"]])
+    |> Stream.unfold(fn queue -> queue |> :queue.out() |> step(data) end)
+    |> Enum.count(& &1)
   end
 
   def part_2(data) do
-    [{["start"], true}]
-    |> Stream.iterate(fn paths ->
-      {finished, running} = Enum.split_with(paths, &match?({["end" | _], _}, &1))
+    :queue.from_list([{["start"], true}])
+    |> Stream.unfold(fn queue -> queue |> :queue.out() |> step(data) end)
+    |> Enum.count(& &1)
+  end
 
-      finished ++
-        for {[h | t], can_revisit} <- running,
-            n <- Map.get(data, h),
-            can_revisit or n not in t or n == String.upcase(n),
-            do: {[n, h | t], can_revisit && String.downcase(n) not in t}
-    end)
-    |> Stream.chunk_every(2, 1)
-    |> Enum.find(&match?([a, a], &1))
-    |> hd()
-    |> length()
+  defp step({:empty, _}, _), do: nil
+  defp step({{:value, ["end" | _]}, queue}, _), do: {true, queue}
+  defp step({{:value, {["end" | _], _}}, queue}, _), do: {true, queue}
+
+  defp step({{:value, [h | _] = path}, queue}, data) do
+    items = for n <- Map.get(data, h), n not in path or n == String.upcase(n), do: [n | path]
+    {false, Enum.reduce(items, queue, &:queue.in/2)}
+  end
+
+  defp step({{:value, {[h | _] = path, true}}, queue}, data) do
+    items = for n <- Map.get(data, h), do: {[n | path], String.downcase(n) not in path}
+    {false, Enum.reduce(items, queue, &:queue.in/2)}
+  end
+
+  defp step({{:value, {[h | _] = path, false}}, queue}, data) do
+    items =
+      for n <- Map.get(data, h), n not in path or n == String.upcase(n), do: {[n | path], false}
+
+    {false, Enum.reduce(items, queue, &:queue.in/2)}
   end
 end
-
-data =
-  "input/2021/12.txt"
-  |> File.read!()
-  |> String.split(~r"\W+", trim: true)
-  |> Enum.chunk_every(2)
-  |> Enum.flat_map(&[&1, Enum.reverse(&1)])
-  |> Enum.reduce(%{}, fn [a, b], acc -> Map.update(acc, a, [b], &[b | &1]) end)
-  |> Map.map(fn {_, v} -> v -- ["start"] end)
-
-[["start"]]
-|> Stream.iterate(fn paths ->
-  {finished, running} = Enum.split_with(paths, &match?(["end" | _], &1))
-
-  finished ++
-    for [h | t] <- running,
-        n <- Map.get(data, h),
-        n not in t or n == String.upcase(n),
-        do: [n, h | t]
-end)
-|> Stream.chunk_every(2, 1)
-|> Enum.find_value(fn [a, b] -> if a == b, do: a end)
-|> length()
-|> IO.inspect(label: "part 1")
-
-[{["start"], true}]
-|> Stream.iterate(fn paths ->
-  {finished, running} = Enum.split_with(paths, &match?({["end" | _], _}, &1))
-
-  finished ++
-    for {[h | t], can_revisit} <- running,
-        n <- Map.get(data, h),
-        can_revisit or n not in t or n == String.upcase(n),
-        do: {[n, h | t], can_revisit && String.downcase(n) not in t}
-end)
-|> Stream.chunk_every(2, 1)
-|> Enum.find_value(fn [a, b] -> if a == b, do: a end)
-|> length()
-|> IO.inspect(label: "part 2")
