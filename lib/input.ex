@@ -7,9 +7,10 @@ defmodule Input do
     end
   end
 
-  def sparse_matrix(input, value_fn \\ & &1) do
+  def sparse_matrix(input, value_fn \\ & &1, filter_fn \\ fn _ -> true end) do
     for {line, i} <- input |> String.split("\n", trim: true) |> Enum.with_index(),
         {c, j} <- line |> String.to_charlist() |> Enum.with_index(),
+        filter_fn.(c),
         val = value_fn.(c),
         into: %{} do
       {{i, j}, val}
