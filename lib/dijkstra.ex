@@ -10,7 +10,7 @@ defmodule Dijkstra do
         {nil, {queue, visited}}
       else
         queue =
-          for {cost, neighbor} <- neighbors_fn.(node),
+          for {neighbor, cost} <- neighbors_fn.(node),
               !MapSet.member?(visited, neighbor),
               reduce: queue do
             pq -> PriorityQueue._in(pq, cost + current_cost, neighbor)

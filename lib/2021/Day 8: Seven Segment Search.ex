@@ -1,20 +1,13 @@
-#! /usr/bin/env elixir
 defmodule Aoc.SevenSegmentSearch do
-  def parse(text) do
-    text
-    |> String.split(~r"[^a-g]+", trim: true)
-    |> Enum.map(&String.to_charlist/1)
-    |> Enum.chunk_every(14)
-    |> Enum.map(&Enum.split(&1, 10))
-  end
-
-  def part_1(data) do
-    data
+  def solve(1, input) do
+    input
+    |> parse()
     |> Enum.flat_map(&elem(&1, 1))
     |> Enum.count(&(length(&1) in [2, 3, 4, 7]))
   end
 
-  def part_2(data) do
+  def solve(2, input) do
+    data = parse(input)
     digits = ~w[ abcefg cf acdeg acdfg bcdf abdfg abdefg acf abcdefg abcdfg ]c
     freqs = digits |> List.flatten() |> Enum.frequencies()
     original = for digit <- digits, do: digit |> Enum.map(&Map.get(freqs, &1)) |> Enum.sort()
@@ -31,5 +24,13 @@ defmodule Aoc.SevenSegmentSearch do
       |> Integer.undigits()
     end)
     |> Enum.sum()
+  end
+
+  defp parse(text) do
+    text
+    |> String.split(~r"[^a-g]+", trim: true)
+    |> Enum.map(&String.to_charlist/1)
+    |> Enum.chunk_every(14)
+    |> Enum.map(&Enum.split(&1, 10))
   end
 end

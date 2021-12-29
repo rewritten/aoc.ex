@@ -1,8 +1,7 @@
 defmodule Aoc.DumboOctopus do
-  def parse(text), do: Input.sparse_matrix(text, &(&1 - ?0))
-
-  def part_1(data) do
-    data
+  def solve(1, input) do
+    input
+    |> Input.sparse_matrix(&(&1 - ?0))
     |> step()
     |> Stream.iterate(&step/1)
     |> Stream.map(&Enum.count(&1, fn {_, v} -> v == 0 end))
@@ -10,8 +9,9 @@ defmodule Aoc.DumboOctopus do
     |> Enum.sum()
   end
 
-  def part_2(data) do
-    data
+  def solve(2, input) do
+    input
+    |> Input.sparse_matrix(&(&1 - ?0))
     |> Stream.iterate(&step/1)
     |> Enum.find_index(&Enum.all?(&1, fn {_, v} -> v == 0 end))
   end

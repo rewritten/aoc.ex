@@ -1,20 +1,22 @@
 defmodule Aoc.GiantSquid do
-  def parse(text) do
+  def solve(1, input) do
+    game = parse(input)
+    {just_called, winner} = Enum.at(game, 0)
+    just_called * (winner |> Enum.reduce(&MapSet.union/2) |> Enum.sum())
+  end
+
+  def solve(2, input) do
+    game = parse(input)
+    {just_called, loser} = game |> Enum.to_list() |> List.last(0)
+    just_called * (loser |> Enum.reduce(&MapSet.union/2) |> Enum.sum())
+  end
+
+  defp parse(text) do
     [nums | boards] = String.split(text, "\n\n", trim: true)
     nums = nums |> String.split(",") |> Enum.map(&String.to_integer/1)
     boards = Enum.map(boards, &parse_board/1)
 
     Stream.transform(nums, boards, &call_num/2)
-  end
-
-  def part_1(game) do
-    {just_called, winner} = Enum.at(game, 0)
-    just_called * (winner |> Enum.reduce(&MapSet.union/2) |> Enum.sum())
-  end
-
-  def part_2(game) do
-    {just_called, loser} = game |> Enum.to_list() |> List.last(0)
-    just_called * (loser |> Enum.reduce(&MapSet.union/2) |> Enum.sum())
   end
 
   defp parse_board(str) do

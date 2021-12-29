@@ -1,7 +1,7 @@
 defmodule Aoc.SmokeBasin do
-  def parse(text), do: Input.sparse_matrix(text, &(&1 - ?0), &(&1 != ?9))
+  def solve(1, input) do
+    data = Input.sparse_matrix(input, &(&1 - ?0), &(&1 != ?9))
 
-  def part_1(data) do
     for {{i, j}, c} <- data,
         Map.get(data, {i, j + 1}, 9) > c,
         Map.get(data, {i, j - 1}, 9) > c,
@@ -12,7 +12,9 @@ defmodule Aoc.SmokeBasin do
     end
   end
 
-  def part_2(data) do
+  def solve(2, input) do
+    data = Input.sparse_matrix(input, &(&1 - ?0), &(&1 != ?9))
+
     {data, %{}, []}
     |> Stream.unfold(&flood/1)
     |> Enum.reject(&is_nil/1)

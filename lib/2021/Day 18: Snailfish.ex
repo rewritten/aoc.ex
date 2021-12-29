@@ -1,16 +1,31 @@
 #! /usr/bin/env elixir
+defmodule Aoc.Snailfish do
+  def solve(1, input) do
+    input
+    |> String.split()
+    |> Enum.map(&(&1 |> Code.eval_string() |> elem(0)))
+    |> Enum.reduce(fn a, b -> reduce([b, a]) end)
+    |> magnitude()
+  end
 
-defmodule Snailfish do
-  def reduce(term) do
-    with ^term <- elem(explode(term, 0), 1), ^term <- split(term) do
+  def solve(2, input) do
+    numbers = input |> String.split() |> Enum.map(&(&1 |> Code.eval_string() |> elem(0)))
+    pairwise = for i <- numbers, j <- numbers, i != j, do: [i, j] |> reduce() |> magnitude()
+    Enum.max(pairwise)
+  end
+
+  defp reduce(term) do
+    with ^term <- explode(term), ^term <- split(term) do
       term
     else
       changed -> reduce(changed)
     end
   end
 
-  def magn([left, right]), do: 3 * magn(left) + 2 * magn(right)
-  def magn(n), do: n
+  defp magnitude([left, right]), do: 3 * magnitude(left) + 2 * magnitude(right)
+  defp magnitude(n), do: n
+
+  defp explode(term), do: term |> explode(0) |> elem(1)
 
   defp explode(n, _) when is_integer(n), do: {0, n, 0}
   defp explode([left, right], 4), do: {left, 0, right}
@@ -33,30 +48,13 @@ defmodule Snailfish do
   defp add([left, right], n), do: [left, add(right, n)]
   defp add(left, right), do: left + right
 
-  defp split(n) when is_integer(n) and n <= 9, do: n
-  defp split(n) when is_integer(n), do: [div(n, 2), n - div(n, 2)]
-
   defp split([left, right]) do
     case split(left) do
       ^left -> [left, split(right)]
       other -> [other, right]
     end
   end
+
+  defp split(n) when n > 9, do: [div(n, 2), n - div(n, 2)]
+  defp split(n), do: n
 end
-
-numbers =
-  "input/2021/18.txt"
-  |> File.read!()
-  |> String.split()
-  |> Enum.map(&(&1 |> Code.eval_string() |> elem(0)))
-
-numbers
-|> Enum.reduce(fn a, b -> Snailfish.reduce([b, a]) end)
-|> Snailfish.magn()
-|> IO.inspect(label: "part 1")
-
-for i <- numbers, j <- numbers, i != j do
-  [i, j] |> Snailfish.reduce() |> Snailfish.magn()
-end
-|> Enum.max()
-|> IO.inspect(label: "part 2")

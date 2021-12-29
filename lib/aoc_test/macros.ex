@@ -1,20 +1,17 @@
 defmodule AocTest.Macros do
-  defmacro test!(title, expected \\ nil) do
-    [_, year, day, name, part] = Regex.run(~r"(\d{4}) - Day (\d{1,2}): (.*) \(part (\d)\)", title)
-    name = name |> String.downcase() |> String.replace(" ", "_") |> Macro.camelize()
-    mod = String.to_existing_atom("Elixir.Aoc." <> name)
+  defmacro test!(opts) when is_list(opts) do
+    part = Keyword.get(opts, :part)
+    expected = Keyword.get(opts, :expected)
 
     quote do
-      test unquote(title), context do
-        input = "input/#{unquote(year)}/#{unquote(day)}.txt" |> File.read!()
-        data = unquote(mod).parse(input)
-        result = apply(unquote(mod), :"part_#{unquote(part)}", [data])
+      test "part #{unquote(part)}", %{input: input, mod: mod, test: test, describe: describe} do
+        result = mod.solve(unquote(part), input)
 
         if unquote(expected) do
           # IO.inspect(result, label: context[:test])
           assert unquote(expected) == result
         else
-          IO.inspect(result, label: context[:test])
+          IO.inspect(result, label: test)
         end
       end
     end

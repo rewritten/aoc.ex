@@ -1,15 +1,14 @@
 defmodule Aoc.SyntaxScoring do
-  def parse(text), do: String.split(text)
-
-  def part_1(data) do
-    data
+  def solve(1, input) do
+    input
+    |> String.split()
     |> Enum.map(&(&1 |> check("") |> elem(0)))
     |> Enum.sum()
   end
 
-  def part_2(data) do
+  def solve(2, input) do
     scores =
-      for line <- data, {s, unmatched} = check(line, ""), s == 0 do
+      for line <- String.split(input), {s, unmatched} = check(line, ""), s == 0 do
         unmatched |> score() |> Integer.undigits(5)
       end
 

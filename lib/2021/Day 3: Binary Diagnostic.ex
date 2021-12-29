@@ -1,8 +1,7 @@
 defmodule Aoc.BinaryDiagnostic do
-  def parse(text), do: Input.matrix(text, &(&1 - ?0))
-
-  def part_1(data) do
-    data
+  def solve(1, input) do
+    input
+    |> Input.matrix(&(&1 - ?0))
     |> Enum.zip_with(& &1)
     |> Enum.map(fn col ->
       %{0 => zeroes, 1 => ones} = Enum.frequencies(col)
@@ -13,8 +12,10 @@ defmodule Aoc.BinaryDiagnostic do
     |> then(fn [e, d] -> e * d end)
   end
 
-  def part_2(data) do
-    {data, data}
+  def solve(2, input) do
+    input
+    |> Input.matrix(&(&1 - ?0))
+    |> then(&{&1, &1})
     |> Stream.unfold(fn {lows, highs} ->
       {low, new_lows} =
         lows |> Enum.group_by(&hd/1, &tl/1) |> Enum.min_by(fn {k, v} -> {length(v), k} end)
