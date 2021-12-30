@@ -25,16 +25,15 @@ defmodule Aoc.Amphipod do
   # In hallway: move to final room
   defp move_one(type, {1, lat}, other, levels) do
     room = room_for(type)
-    obstacles = for {{1, y}, _} <- other, y in lat..room, do: y
 
-    inhabitants =
-      levels |> Enum.map(&Map.get(other, {&1, room})) |> Enum.drop_while(&match?({^type, _}, &1))
-
-    case {obstacles, inhabitants} do
-      {[], [nil, nil, nil, nil]} -> [{5, room}]
-      {[], [nil, nil, nil]} -> [{4, room}]
-      {[], [nil, nil]} -> [{3, room}]
-      {[], [nil]} -> [{2, room}]
+    with _obstacles = [] <- for({{1, y}, _} <- other, y in lat..room, do: y),
+         spaces =
+           levels
+           |> Enum.map(&Map.get(other, {&1, room}))
+           |> Enum.drop_while(&match?({^type, _}, &1)),
+         true <- Enum.all?(spaces, &is_nil/1) do
+      [{1 + length(spaces), room}]
+    else
       _ -> []
     end
   end
