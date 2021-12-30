@@ -3,10 +3,9 @@ defmodule Aoc.ExtendedPolymerization do
   def solve(2, input), do: input |> parse() |> run(40)
 
   defp parse(text) do
-    [initial, replacement_data] = String.split(text, "\n\n", trim: true)
+    [initial, replacement_data] = Input.p(text)
 
-    for line <- String.split(replacement_data, "\n", trim: true) do
-      [pair, insertion] = String.split(line, " -> ", trim: true)
+    for [pair, insertion] <- Input.l(replacement_data, map: :w) do
       Cache.fetch(pair, fn -> insertion end)
     end
 

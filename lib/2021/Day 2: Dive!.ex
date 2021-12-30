@@ -1,9 +1,7 @@
 defmodule Aoc.Dive do
   def solve(1, input) do
     input
-    |> String.split()
-    |> Enum.chunk_every(2)
-    |> Enum.map(fn [d, n] -> [d, String.to_integer(n)] end)
+    |> Input.l(map: :w, map: fn [d, n] -> [d, String.to_integer(n)] end)
     |> Enum.reduce([0, 0], fn
       ["up", n], [hor, dep] -> [hor, dep - n]
       ["down", n], [hor, dep] -> [hor, dep + n]
@@ -14,9 +12,7 @@ defmodule Aoc.Dive do
 
   def solve(2, input) do
     input
-    |> String.split()
-    |> Enum.chunk_every(2)
-    |> Enum.map(fn [d, n] -> [d, String.to_integer(n)] end)
+    |> Input.l(map: :w, map: fn [d, n] -> [d, String.to_integer(n)] end)
     |> Enum.reduce([0, 0, 0], fn
       ["up", n], [hor, dep, aim] -> [hor, dep, aim - n]
       ["down", n], [hor, dep, aim] -> [hor, dep, aim + n]

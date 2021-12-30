@@ -27,10 +27,6 @@ defmodule Aoc.SevenSegmentSearch do
   end
 
   defp parse(text) do
-    text
-    |> String.split(~r"[^a-g]+", trim: true)
-    |> Enum.map(&String.to_charlist/1)
-    |> Enum.chunk_every(14)
-    |> Enum.map(&Enum.split(&1, 10))
+    Input.l(text, map: :w, fmap: &String.to_charlist/1, map: &Enum.split(&1, 10))
   end
 end

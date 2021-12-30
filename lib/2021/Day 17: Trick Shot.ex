@@ -1,20 +1,13 @@
 defmodule Aoc.TrickShot do
   def solve(1, data) do
     max_vertical_velocity =
-      data |> parse() |> valid_velocities() |> Enum.map(&elem(&1, 1)) |> Enum.max()
+      data |> Input.i() |> valid_velocities() |> Enum.map(&elem(&1, 1)) |> Enum.max()
 
     div(max_vertical_velocity * (max_vertical_velocity + 1), 2)
   end
 
   def solve(2, data) do
-    data |> parse() |> valid_velocities() |> length()
-  end
-
-  defp parse(text) do
-    text
-    |> then(&Regex.scan(~r/-?\d+/, &1))
-    |> List.flatten()
-    |> Enum.map(&String.to_integer/1)
+    data |> Input.i() |> valid_velocities() |> length()
   end
 
   defp valid_velocities([x1, x2, y1, y2]) do

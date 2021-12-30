@@ -4,9 +4,9 @@ defmodule Aoc.Lanternfish do
 
   defp parse(text) do
     text
-    |> String.to_charlist()
+    |> Input.i()
     |> Enum.frequencies()
-    |> then(&for c <- ?0..?8, do: Map.get(&1, c, 0))
+    |> then(&for c <- 0..8, do: Map.get(&1, c, 0))
     |> Stream.iterate(fn [a, b, c, d, e, f, g, h, i] -> [b, c, d, e, f, g, h + a, i, a] end)
   end
 end

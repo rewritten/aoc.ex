@@ -17,9 +17,8 @@ defmodule Aoc.PassagePathing do
 
   defp parse(text) do
     text
-    |> String.split(~r"\W+", trim: true)
-    |> Enum.chunk_every(2)
-    |> Enum.flat_map(fn [a, b] -> [%{a => [b]}, %{b => [a]}] end)
+    |> Input.l(map: :w, map: fn [a, b] -> [%{a => [b]}, %{b => [a]}] end)
+    |> List.flatten()
     |> Enum.reduce(&Map.merge(&1, &2, fn _, v, w -> v ++ w end))
     |> Map.map(fn {_, v} -> v -- ["start"] end)
   end

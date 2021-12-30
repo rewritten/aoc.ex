@@ -1,30 +1,32 @@
 defmodule Aoc.HydrothermalVenture do
   def solve(1, input) do
-    input
-    |> parse()
-    |> Enum.flat_map(fn tuple -> diag(tuple, false) end)
-    |> Enum.frequencies()
-    |> Enum.count(&(!match?({_, 1}, &1)))
+    for [a, b, c, d] = limits <- Input.l(input, map: :i),
+        a == c or b == d,
+        z <- diag(limits),
+        reduce: {MapSet.new(), MapSet.new()} do
+      {seen, again} ->
+        if MapSet.member?(seen, z),
+          do: {seen, MapSet.put(again, z)},
+          else: {MapSet.put(seen, z), again}
+    end
+    |> elem(1)
+    |> MapSet.size()
   end
 
   def solve(2, input) do
-    input
-    |> parse()
-    |> Enum.flat_map(fn tuple -> diag(tuple, true) end)
-    |> Enum.frequencies()
-    |> Enum.count(&(!match?({_, 1}, &1)))
+    for limits <- Input.l(input, map: :i),
+        z <- diag(limits),
+        reduce: {MapSet.new(), MapSet.new()} do
+      {seen, again} ->
+        if MapSet.member?(seen, z),
+          do: {seen, MapSet.put(again, z)},
+          else: {MapSet.put(seen, z), again}
+    end
+    |> elem(1)
+    |> MapSet.size()
   end
 
-  defp parse(text) do
-    text
-    |> String.split(~r([^\d]+), trim: true)
-    |> Enum.map(&String.to_integer/1)
-    |> Enum.chunk_every(4)
-    |> Enum.map(&List.to_tuple/1)
-  end
-
-  defp diag({a, b, a, d}, _), do: Enum.map(b..d, &{a, &1})
-  defp diag({a, b, c, b}, _), do: Enum.map(a..c, &{&1, b})
-  defp diag(_, false), do: []
-  defp diag({a, b, c, d}, _), do: Enum.zip(a..c, b..d)
+  defp diag([a, b, a, d]), do: Enum.map(b..d, &{a, &1})
+  defp diag([a, b, c, b]), do: Enum.map(a..c, &{&1, b})
+  defp diag([a, b, c, d]), do: Enum.zip(a..c, b..d)
 end

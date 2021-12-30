@@ -12,15 +12,15 @@ defmodule Aoc.GiantSquid do
   end
 
   defp parse(text) do
-    [nums | boards] = String.split(text, "\n\n", trim: true)
-    nums = nums |> String.split(",") |> Enum.map(&String.to_integer/1)
+    [nums | boards] = Input.p(text)
+    nums = Input.i(nums)
     boards = Enum.map(boards, &parse_board/1)
 
     Stream.transform(nums, boards, &call_num/2)
   end
 
   defp parse_board(str) do
-    rows = str |> String.split() |> Enum.map(&String.to_integer/1) |> Enum.chunk_every(5)
+    rows = Input.l(str, map: :i)
     cols = Enum.zip_with(rows, & &1)
     Enum.map(cols ++ rows, &MapSet.new/1)
   end

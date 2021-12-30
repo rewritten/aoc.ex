@@ -20,23 +20,17 @@ defmodule Aoc.TransparentOrigami do
   end
 
   defp parse(text) do
-    [point_data, fold_data] = String.split(text, "\n\n", trim: true)
+    [point_data, fold_data] = Input.p(text)
 
-    points =
-      point_data
-      |> String.split("\n", trim: true)
-      |> Enum.map(fn line ->
-        [x, y] = String.split(line, ",", trim: true)
-        {String.to_integer(x), String.to_integer(y)}
-      end)
+    points = Input.l(point_data, map: :i, map: &List.to_tuple/1)
 
     folds =
-      fold_data
-      |> String.split("\n", trim: true)
-      |> Enum.map(fn
-        "fold along x=" <> num -> {0, String.to_integer(num)}
-        "fold along y=" <> num -> {1, String.to_integer(num)}
-      end)
+      Input.l(fold_data,
+        map: fn
+          "fold along x=" <> num -> {0, String.to_integer(num)}
+          "fold along y=" <> num -> {1, String.to_integer(num)}
+        end
+      )
 
     {points, folds}
   end

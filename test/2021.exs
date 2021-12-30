@@ -136,4 +136,52 @@ defmodule AocTest do
     test! part: 1, expected: 2907
     test! part: 2, expected: 4690
   end
+
+  describe "Day 19: Beacon Scanner" do
+    @describetag mod: Aoc.BeaconScanner, input: File.read!("input/2021/19.txt")
+
+    test! part: 1, expected: 405
+    test! part: 2, expected: 12306
+  end
+
+  describe "Day 20: Trench Map" do
+    @describetag mod: Aoc.TrenchMap, input: File.read!("input/2021/20.txt")
+
+    test! part: 1, expected: 5498
+    test! part: 2, expected: 16014
+  end
+
+  describe "Day 21: Dirac Dice" do
+    @describetag mod: Aoc.DiracDice, input: File.read!("input/2021/21.txt")
+
+    test! part: 1, expected: 908_595
+    test! part: 2, expected: 91_559_198_282_731
+  end
+
+  describe "Day 22: Reactor Reboot" do
+    @describetag mod: Aoc.ReactorReboot, input: File.read!("input/2021/22.txt")
+
+    test! part: 1, expected: 546_724
+    test! part: 2, expected: 1_346_544_039_176_841
+  end
+
+  describe "Day 23: Amphipod" do
+    @describetag mod: Aoc.Amphipod, input: File.read!("input/2021/23.txt")
+
+    test! part: 1, expected: 14371
+    test! part: 2, expected: 40941
+  end
+
+  describe "Day 24: Arithmetic Logic Unit" do
+    @describetag mod: Aoc.ArithmeticLogicUnit, input: File.read!("input/2021/24.txt")
+
+    test! part: 1, expected: 12_996_997_829_399
+    test! part: 2, expected: 11_841_231_117_189
+  end
+
+  describe "Day 25: Sea Cucumber" do
+    @describetag mod: Aoc.SeaCucumber, input: File.read!("input/2021/25.txt")
+
+    test! part: 1, expected: 417
+  end
 end

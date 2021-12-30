@@ -28,12 +28,7 @@ defmodule Aoc.TheTreacheryOfWhales do
     end)
   end
 
-  defp parse(text) do
-    text
-    |> String.split(~r([\D]+), trim: true)
-    |> Enum.map(&String.to_integer/1)
-    |> Enum.sort()
-  end
+  defp parse(text), do: text |> Input.i() |> Enum.sort()
 
   defp optimal(range, initial, delta_fn) do
     range

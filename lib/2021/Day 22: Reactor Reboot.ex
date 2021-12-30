@@ -1,7 +1,27 @@
-#! /usr/bin/env elixir
+defmodule Aoc.ReactorReboot do
+  def solve(1, text) do
+    text
+    |> parse()
+    |> Enum.take_while(fn {cuboid, _} -> Enum.all?(cuboid, &(!Range.disjoint?(&1, -50..50))) end)
+    |> perform()
+  end
 
-defmodule Cuboids do
-  def perform(instructions) do
+  def solve(2, text) do
+    text |> parse() |> perform()
+  end
+
+  defp parse(text) do
+    Input.l(text,
+      map: fn line ->
+        {~r"-?\d+..-?\d+"
+         |> Regex.scan(line)
+         |> List.flatten()
+         |> Enum.map(&elem(Code.eval_string(&1), 0)), match?("on" <> _, line)}
+      end
+    )
+  end
+
+  defp perform(instructions) do
     for [a, b, c] <- do_perform(instructions, []), reduce: 0 do
       acc -> acc + Enum.count(a) * Enum.count(b) * Enum.count(c)
     end
@@ -37,23 +57,3 @@ defmodule Cuboids do
   defp split(a..b, _..y) when y >= a and y < b, do: [a..y, (y + 1)..b]
   defp split(a..b, _), do: [a..b]
 end
-
-data =
-  "input/2021/22.txt"
-  |> File.read!()
-  |> String.split("\n", trim: true)
-  |> Enum.map(fn line ->
-    {~r"-?\d+..-?\d+"
-     |> Regex.scan(line)
-     |> List.flatten()
-     |> Enum.map(&elem(Code.eval_string(&1), 0)), match?("on" <> _, line)}
-  end)
-
-data
-|> Enum.take_while(fn {cuboid, _} -> Enum.all?(cuboid, &(!Range.disjoint?(&1, -50..50))) end)
-|> Cuboids.perform()
-|> IO.inspect(label: "part 1")
-
-data
-|> Cuboids.perform()
-|> IO.inspect(label: "part 2")
