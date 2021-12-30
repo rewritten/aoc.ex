@@ -21,7 +21,8 @@ defmodule Aoc.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:httpoison, "~> 1.8"}
+      {:httpoison, "~> 1.8"},
+      {:pandex, "~> 0.2.0"}
     ]
   end
 end
