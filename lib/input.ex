@@ -28,6 +28,7 @@ defmodule Input do
     |> Enum.reduce(ls, fn
       {:map, :w}, acc -> Enum.map(acc, &w/1)
       {:map, :i}, acc -> Enum.map(acc, &i/1)
+      {:map, :i?}, acc -> Enum.map(acc, &i?/1)
       {:map, f}, acc when is_function(f, 1) -> Enum.map(acc, f)
       {:fmap, f}, acc when is_function(f, 1) -> Enum.map(acc, &Enum.map(&1, f))
     end)
@@ -35,4 +36,14 @@ defmodule Input do
 
   def p(text), do: String.split(text, "\n\n", trim: true)
   def w(text), do: String.split(text, ~r"\W+", trim: true)
+
+  def i?(text),
+    do:
+      String.split(text, ~r"\W+", trim: true)
+      |> Enum.map(fn word ->
+        case Integer.parse(word) do
+          {n, ""} -> n
+          _ -> word
+        end
+      end)
 end

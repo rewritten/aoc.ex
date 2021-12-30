@@ -27,6 +27,8 @@ defmodule AocTest do
     @describetag mod: Aoc.TheIdealStockingStuffer, input: File.read!("input/2015/4.txt")
 
     test! part: 1, expected: 117_946
+
+    @tag :slow
     test! part: 2, expected: 3_938_038
   end
 
@@ -43,5 +45,12 @@ defmodule AocTest do
 
     test! part: 1, expected: 377_891
     test! part: 2, expected: 14_110_788
+  end
+
+  describe "Day 7: Some Assembly Required" do
+    @describetag mod: Aoc.SomeAssemblyRequired, input: File.read!("input/2015/7.txt")
+
+    test! part: 1, expected: 3176
+    test! part: 2, expected: 14710
   end
 end
