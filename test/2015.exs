@@ -53,4 +53,11 @@ defmodule AocTest do
     test! part: 1, expected: 3176
     test! part: 2, expected: 14710
   end
+
+  describe "Day 8: Matchsticks" do
+    @describetag mod: Aoc.Matchsticks, input: File.read!("input/2015/8.txt")
+
+    test! part: 1, expected: 1371
+    test! part: 2, expected: 2117
+  end
 end
