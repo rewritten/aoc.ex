@@ -26,6 +26,9 @@ RUN apt-get update \
   && mix local.hex --force \
   && mix local.rebar --force \
 
+  # Install pandoc to convert html to markdown
+  && apt-get install -y pandoc \
+
   # Clean up
   && apt-get autoremove -y \
   && apt-get clean -y \
