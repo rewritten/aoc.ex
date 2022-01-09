@@ -76,4 +76,11 @@ defmodule AocTest2015 do
     @tag :slow
     test! part: 2, expected: 3_579_328
   end
+
+  describe "Day 11: Corporate Policy" do
+    @describetag mod: Aoc.CorporatePolicy, input: File.read!("input/2015/11.txt")
+
+    test! part: 1, expected: "cqjxxyzz"
+    test! part: 2, expected: "cqkaabcc"
+  end
 end
