@@ -67,4 +67,13 @@ defmodule AocTest2015 do
     test! part: 1, expected: 207
     test! part: 2, expected: 804
   end
+
+  describe "Day 10: Elves Look, Elves Say" do
+    @describetag mod: Aoc.ElvesLookElvesSay, input: File.read!("input/2015/10.txt")
+
+    test! part: 1, expected: 252_594
+
+    @tag :slow
+    test! part: 2, expected: 3_579_328
+  end
 end
