@@ -1,4 +1,4 @@
-defmodule AocTest do
+defmodule AocTest2015 do
   use ExUnit.Case
   import AocTest.Macros
 
@@ -59,5 +59,12 @@ defmodule AocTest do
 
     test! part: 1, expected: 1371
     test! part: 2, expected: 2117
+  end
+
+  describe "Day 9: All in a Single Night" do
+    @describetag mod: Aoc.AllInASingleNight, input: File.read!("input/2015/9.txt")
+
+    test! part: 1, expected: 207
+    test! part: 2, expected: 804
   end
 end
