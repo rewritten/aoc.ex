@@ -50,7 +50,7 @@ defmodule Mix.Tasks.Get do
       |> String.split(":")
       |> Enum.at(1)
       |> String.downcase()
-      |> String.replace(~w[' ? !], "")
+      |> String.replace(~w[' ? ! ,], "")
       |> String.replace(~r{[ -]}, "_")
       |> Macro.camelize()
 
