@@ -116,7 +116,9 @@ defmodule Mix.Tasks.Get do
   end
 
   defp get!(url) do
-    HTTPoison.get!("https://adventofcode.com/" <> url, [],
+    HTTPoison.get!(
+      "https://adventofcode.com/" <> url,
+      [{"User-Agent", "github.com/rewritten/aoc.ex by saverio.trioni@gmail.com"}],
       hackney: [cookie: ["session=#{System.get_env("SESSION")}"]]
     ).body
   end
