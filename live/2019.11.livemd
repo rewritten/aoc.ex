@@ -1,0 +1,81 @@
+# Day 11: Space Police
+
+```elixir
+Mix.install([:kino])
+input = Kino.Input.textarea("")
+```
+
+## Intcode
+
+```elixir
+defmodule Intcode do
+  use GenServer
+
+  import Enum, only: [at: 2]
+
+  defstruct(:position, :data, :relbase)
+
+  def handle_cast(:run, state) do
+    {:noreply, state, {:continue, :step}}
+  end
+
+  def handle_continue(:step, s) do
+    s.position
+    |> get()
+    |> Kernel.+(100_000)
+    |> Integer.digits()
+    |> case do
+      [_, _, _, _, 9, 9] -> nil
+      [_, m3, m2, m1, _, 1] -> {:add, [m1, m2, m3]}
+      [_, m3, m2, m1, _, 2] -> {:mul, [m1, m2, m3]}
+      [_, _, _, m1, _, 3] -> {:in, [m1]}
+      [_, _, _, m1, _, 4] -> {:out, [m1]}
+      [_, _, m2, m1, _, 5] -> {:jif, [m1, m2]}
+      [_, _, m2, m1, _, 6] -> {:jun, [m1, m2]}
+      [_, m3, m2, m1, _, 7] -> {:lt, [m1, m2, m3]}
+      [_, m3, m2, m1, _, 8] -> {:eq, [m1, m2, m3]}
+      [_, _, _, m1, _, 9] -> {:reg, [m1]}
+    end
+    |> case do
+      nil ->
+        {:noreply, s}
+
+      {cmd, modes} ->
+        args =
+          modes
+          |> Enum.with_index(s.position + 1)
+          |> Enum.map(fn
+            {0, n} -> get(n)
+            {1, n} -> n
+            {2, n} -> get(n) + get(:base)
+          end)
+
+        execute(cmd, args)
+        s = update_in(s.position, &(&1 + length(modes) + 1))
+        {:noreply, s, {:continue, run}}
+    end
+  end
+
+  def execute(:add, [a, b, c]), do: put(c, get(a) + get(b))
+  def execute(:mul, [a, b, c]), do: put(c, get(a) * get(b))
+
+  def execute(:in, [a]) do
+    receive do
+      n -> put(a, n)
+    end
+  end
+
+  def execute(:out, args) do
+    {:noreply, state}
+  end
+
+  def execute(:jif, [a, b]), do: if(get(a) != 0, do: {:jump, get(b)})
+  def execute(:jun, [a, b]), do: if(get(a) == 0, do: {:jump, get(b)})
+  def execute(:lt, [a, b, c]), do: put(c, if(get(a) < get(b), do: 1, else: 0))
+  def execute(:eq, [a, b, c]), do: put(c, if(get(a) == get(b), do: 1, else: 0))
+  def execute(:reg, [a]), do: put(:base, get(:base) + get(a))
+
+  defp get(key), do: Process.get(key, 0)
+  defp put(key, value), do: Process.put(key, value)
+end
+```

@@ -40,7 +40,20 @@ defmodule Mix.Tasks.Get do
     {:ok, problem_markdown} = Pandex.html_to_gfm(problem_html)
 
     [_, problem_markdown] = String.split(problem_markdown, "<div role=\"main\">")
-    [problem_markdown, _] = String.split(problem_markdown, "Both parts of this puzzle")
+
+    [problem_markdown, _] =
+      cond do
+        String.contains?(problem_markdown, "Both parts of this puzzle") ->
+          String.split(problem_markdown, "Both parts of this puzzle")
+
+        String.contains?(problem_markdown, "Answer") ->
+          String.split(problem_markdown, "Answer")
+
+        true ->
+          String.split(problem_markdown, "To begin, ")
+      end
+
+    # [problem_markdown, _] = String.split(problem_markdown, "Both parts of this puzzle")
     problem_markdown = String.trim(problem_markdown)
     [_, title | _] = String.split(problem_markdown, "---")
     title = String.trim(title)
