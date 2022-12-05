@@ -22,4 +22,18 @@ defmodule AocTest do
     test! part: 1, expected: 7824
     test! part: 2, expected: 2798
   end
+
+  describe "Day 4: Camp Cleanup" do
+    @describetag mod: Aoc.CampCleanup, input: File.read!("input/2022/4.txt")
+
+    test! part: 1, expected: 644
+    test! part: 2, expected: 926
+  end
+
+  describe "Day 5: Supply Stacks" do
+    @describetag mod: Aoc.SupplyStacks, input: File.read!("input/2022/5.txt")
+
+    test! part: 1, expected: 'QNHWJVJZW'
+    test! part: 2, expected: 'BPCZJLFJW'
+  end
 end

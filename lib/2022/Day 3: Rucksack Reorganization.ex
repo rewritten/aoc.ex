@@ -4,7 +4,13 @@ defmodule Aoc.RucksackReorganization do
       sack
       |> String.to_charlist()
       |> Enum.chunk_every(div(String.length(sack), 2))
-      |> common_letters()
+      |> Enum.map(&MapSet.new/1)
+      |> Enum.reduce(&MapSet.intersection/2)
+      |> Enum.at(0)
+      |> case do
+        c when c in ?A..?Z -> c - ?A + 27
+        c when c in ?a..?z -> c - ?a + 1
+      end
     end
     |> Enum.sum()
   end
@@ -14,18 +20,16 @@ defmodule Aoc.RucksackReorganization do
       String.to_charlist(sack)
     end
     |> Enum.chunk_every(3)
-    |> Enum.map(&common_letters/1)
+    |> Enum.map(fn sacks ->
+      sacks
+      |> Enum.map(&MapSet.new/1)
+      |> Enum.reduce(&MapSet.intersection/2)
+      |> Enum.at(0)
+      |> case do
+        c when c in ?A..?Z -> c - ?A + 27
+        c when c in ?a..?z -> c - ?a + 1
+      end
+    end)
     |> Enum.sum()
-  end
-
-  defp common_letters(sacks) do
-    sacks
-    |> Enum.map(&MapSet.new/1)
-    |> Enum.reduce(&MapSet.intersection/2)
-    |> Enum.at(0)
-    |> case do
-      c when c in ?A..?Z -> c - ?A + 27
-      c when c in ?a..?z -> c - ?a + 1
-    end
   end
 end
