@@ -71,7 +71,22 @@ defmodule Mix.Tasks.Get do
   end
 
   def save_text(year, title, text) do
-    File.write("text/#{year}/#{title}.md", text)
+    text =
+      text
+      |> String.replace(~r[## --- (Day (\d+)): (.+) ---\n], """
+      # \\1: \\3
+
+      ```elixir
+      text = File.read!("input/2022/\\2.txt")
+      ```
+
+      ## \\1
+      """)
+      |> String.replace(~r[## --- Part Two ---\n], """
+      ## Part Two
+      """)
+
+    File.write("text/#{year}/#{title}.livemd", text)
   end
 
   def create_code(year, title, module_name) do

@@ -1,4 +1,10 @@
-## --- Day 5: Supply Stacks ---
+# Day 5: Supply Stacks
+
+```elixir
+text = File.read!("input/2022/5.txt")
+```
+
+## Day 5
 
 The expedition can depart as soon as the final supplies have been
 unloaded from the ships. Supplies are stored in stacks of marked
@@ -81,7 +87,7 @@ of each stack?*
 
 Your puzzle answer was `QNHWJVJZW`.
 
-## --- Part Two ---
+## Part Two
 
 As you watch the crane operator expertly rearrange the crates, you
 notice the process isn't following your prediction.
