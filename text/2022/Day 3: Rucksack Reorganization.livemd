@@ -4,7 +4,7 @@
 text = File.read!("input/2022/3.txt")
 ```
 
-## Day 3
+## Rucksack Reorganization
 
 One Elf has the important job of loading all of the
 <a href="https://en.wikipedia.org/wiki/Rucksack"

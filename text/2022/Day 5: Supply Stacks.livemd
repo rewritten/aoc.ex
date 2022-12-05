@@ -4,7 +4,7 @@
 text = File.read!("input/2022/5.txt")
 ```
 
-## Day 5
+## Supply Stacks
 
 The expedition can depart as soon as the final supplies have been
 unloaded from the ships. Supplies are stored in stacks of marked

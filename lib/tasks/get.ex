@@ -80,7 +80,7 @@ defmodule Mix.Tasks.Get do
       text = File.read!("input/2022/\\2.txt")
       ```
 
-      ## \\1
+      ## \\3
       """)
       |> String.replace(~r[## --- Part Two ---\n], """
       ## Part Two
