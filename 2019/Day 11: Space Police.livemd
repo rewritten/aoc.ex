@@ -1,4 +1,10 @@
-## --- Day 11: Space Police ---
+# Day 11: Space Police
+
+```elixir
+text = File.read!("input/2019/11.txt")
+```
+
+## Space Police
 
 On the way to Jupiter, you're [pulled
 over](https://www.youtube.com/watch?v=KwY28rpyKDE) by the *Space
@@ -31,11 +37,11 @@ robot is over a *black* panel or `1` if the robot is over a *white*
 panel. Then, the program will output two values:
 
 - First, it will output a value indicating the *color to paint the
-    panel* the robot is over: `0` means to paint the panel *black*, and
-    `1` means to paint the panel *white*.
+  panel* the robot is over: `0` means to paint the panel *black*, and
+  `1` means to paint the panel *white*.
 - Second, it will output a value indicating the *direction the robot
-    should turn*: `0` means it should turn *left 90 degrees*, and `1`
-    means it should turn *right 90 degrees*.
+  should turn*: `0` means it should turn *left 90 degrees*, and `1`
+  means it should turn *right 90 degrees*.
 
 After the robot turns, it should always move *forward exactly one
 panel*. The robot starts facing *up*.

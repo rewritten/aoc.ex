@@ -63,7 +63,7 @@ defmodule Mix.Tasks.Get do
       # \\1: \\3
 
       ```elixir
-      text = File.read!("input/2022/\\2.txt")
+      text = File.read!("input/#{year}/\\2.txt")
       ```
 
       ## \\3
