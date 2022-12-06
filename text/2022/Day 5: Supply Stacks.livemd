@@ -25,7 +25,7 @@ they can embark.
 They do, however, have a drawing of the starting stacks of crates *and*
 the rearrangement procedure (your puzzle input). For example:
 
-```
+```plain
     [D]    
 [N] [C]    
 [Z] [M] [P]
@@ -42,12 +42,35 @@ crates: crate `Z` is on the bottom, and crate `N` is on top. Stack 2
 contains three crates; from bottom to top, they are crates `M`, `C`, and
 `D`. Finally, stack 3 contains a single crate, `P`.
 
+```elixir
+stacks =
+  text
+  |> String.split("\n\n")
+  |> hd()
+  |> String.split("\n", trim: true)
+  |> Enum.reverse()
+  |> Enum.drop(1)
+  |> Enum.map(&(&1 |> String.to_charlist() |> Enum.drop(1) |> Enum.take_every(4)))
+  |> Enum.zip_with(& &1)
+  |> Enum.map(fn stack -> stack |> Enum.reverse() |> Enum.filter(&(&1 != 32)) end)
+```
+
+```elixir
+rules =
+  text
+  |> String.split("\n\n")
+  |> Enum.at(1)
+  |> String.split(~r"\D+", trim: true)
+  |> Enum.map(&String.to_integer/1)
+  |> Enum.chunk_every(3)
+```
+
 Then, the rearrangement procedure is given. In each step of the
 procedure, a quantity of crates is moved from one stack to a different
 stack. In the first step of the above rearrangement procedure, one crate
 is moved from stack 2 to stack 1, resulting in this configuration:
 
-```
+```plain
 [D]        
 [N] [C]    
 [Z] [M] [P]
@@ -58,7 +81,7 @@ In the second step, three crates are moved from stack 1 to stack 3.
 Crates are moved *one at a time*, so the first crate to be moved (`D`)
 ends up below the second and third crates:
 
-```
+```plain
         [Z]
         [N]
     [C] [D]
@@ -69,7 +92,7 @@ ends up below the second and third crates:
 Then, both crates are moved from stack 2 to stack 1. Again, because
 crates are moved *one at a time*, crate `C` ends up below crate `M`:
 
-```
+```plain
         [Z]
         [N]
 [M]     [D]
@@ -79,7 +102,7 @@ crates are moved *one at a time*, crate `C` ends up below crate `M`:
 
 Finally, one crate is moved from stack 1 to stack 2:
 
-```
+```plain
         [Z]
         [N]
         [D]
@@ -95,7 +118,23 @@ Elves the message `CMZ`.
 *After the rearrangement procedure completes, what crate ends up on top
 of each stack?*
 
-Your puzzle answer was `QNHWJVJZW`.
+```elixir
+defmodule CraneMover9000 do
+  def move([count, from, to], stacks) do
+    Enum.reduce(1..count, stacks, fn _, stacks ->
+      stacks
+      |> update_in([Access.at(from - 1)], &tl/1)
+      |> update_in([Access.at(to - 1)], &[stacks |> Enum.at(from - 1) |> hd() | &1])
+    end)
+  end
+end
+```
+
+```elixir
+rules
+|> Enum.reduce(stacks, &CraneMover9000.move/2)
+|> Enum.map(&hd/1)
+```
 
 ## Part Two
 
@@ -114,7 +153,7 @@ pick up and move multiple crates at once*.
 Again considering the example above, the crates begin in the same
 configuration:
 
-```
+```plain
     [D]    
 [N] [C]    
 [Z] [M] [P]
@@ -124,7 +163,7 @@ configuration:
 Moving a single crate from stack 2 to stack 1 behaves the same as
 before:
 
-```
+```plain
 [D]        
 [N] [C]    
 [Z] [M] [P]
@@ -135,7 +174,7 @@ However, the action of moving three crates from stack 1 to stack 3 means
 that those three moved crates *stay in the same order*, resulting in
 this new configuration:
 
-```
+```plain
         [D]
         [N]
     [C] [Z]
@@ -146,7 +185,7 @@ this new configuration:
 Next, as both crates are moved from stack 2 to stack 1, they *retain
 their order* as well:
 
-```
+```plain
         [D]
         [N]
 [C]     [Z]
@@ -157,7 +196,7 @@ their order* as well:
 Finally, a single crate is still moved from stack 1 to stack 2, but now
 it's crate `C` that gets moved:
 
-```
+```plain
         [D]
         [N]
         [Z]
@@ -173,4 +212,18 @@ that the Elves know where they should stand to be ready to unload the
 final supplies. *After the rearrangement procedure completes, what crate
 ends up on top of each stack?*
 
-Your puzzle answer was `BPCZJLFJW`.
+```elixir
+defmodule CraneMover9001 do
+  def move([count, from, to], stacks) do
+    stacks
+    |> update_in([Access.at(from - 1)], &Enum.drop(&1, count))
+    |> update_in([Access.at(to - 1)], &((stacks |> Enum.at(from - 1) |> Enum.take(count)) ++ &1))
+  end
+end
+```
+
+```elixir
+rules
+|> Enum.reduce(stacks, &CraneMover9001.move/2)
+|> Enum.map(&hd/1)
+```

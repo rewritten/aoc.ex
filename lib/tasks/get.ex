@@ -37,7 +37,7 @@ defmodule Mix.Tasks.Get do
   def get_text(year, day) do
     problem_html = get!("#{year}/day/#{day}")
 
-    {:ok, problem_markdown} = Pandex.html_to_gfm(problem_html)
+    {:ok, problem_markdown} = Pandex.html_to_gfm(problem_html, ~w[--backtick_code_blocks])
 
     [_, problem_markdown] = String.split(problem_markdown, "<div role=\"main\">")
 

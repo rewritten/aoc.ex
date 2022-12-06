@@ -73,8 +73,6 @@ this is *`24000`* (carried by the fourth Elf).
 Find the Elf carrying the most Calories. *How many total Calories is
 that Elf carrying?*
 
-Your puzzle answer was `74394`.
-
 ```elixir
 text
 |> String.split("\n\n", trim: true)
@@ -102,8 +100,6 @@ these three elves is `45000`.
 
 Find the top three Elves carrying the most Calories. *How many Calories
 are those Elves carrying in total?*
-
-Your puzzle answer was `212836`.
 
 ```elixir
 text
