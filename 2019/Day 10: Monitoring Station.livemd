@@ -1,0 +1,55 @@
+# Day 10: Monitoring Station
+
+```elixir
+Mix.install([:kino])
+input = Kino.Input.textarea("")
+```
+
+## Part 1
+
+```elixir
+asteroids =
+  input
+  |> Kino.Input.read()
+  |> String.split("\n", trim: true)
+  |> Enum.with_index()
+  |> Enum.flat_map(fn {line, y} ->
+    line
+    |> String.to_charlist()
+    |> Enum.with_index()
+    |> Enum.flat_map(fn
+      {?#, x} -> [{x, y}]
+      _ -> []
+    end)
+  end)
+
+{{x0, y0}, lines} =
+  asteroids
+  |> Enum.map(fn {x, y} = p ->
+    {p,
+     asteroids
+     |> Enum.map(fn {x1, y1} -> {x1 - x, y1 - y} end)
+     |> Enum.reject(&match?({0, 0}, &1))
+     |> Enum.group_by(fn {x1, y1} -> :math.atan2(x1, y1) end)}
+  end)
+  |> Enum.max_by(fn {_, v} -> map_size(v) end)
+
+map_size(lines)
+```
+
+## Part 2
+
+```elixir
+lines
+|> Enum.sort(&Kernel.>=/2)
+|> Enum.map(fn {_angle, asteroids} ->
+  asteroids
+  |> Enum.sort_by(fn {x, y} -> x ** 2 + y ** 2 end)
+  |> Stream.concat(Stream.cycle([nil]))
+end)
+|> Stream.zip_with(& &1)
+|> Stream.concat()
+|> Stream.filter(& &1)
+|> Enum.at(199)
+|> then(fn {x, y} -> (x + x0) * 100 + y + y0 end)
+```

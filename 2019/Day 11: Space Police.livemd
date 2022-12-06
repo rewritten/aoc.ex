@@ -30,10 +30,10 @@ uses input instructions to access the robot's camera: provide `0` if the
 robot is over a *black* panel or `1` if the robot is over a *white*
 panel. Then, the program will output two values:
 
--   First, it will output a value indicating the *color to paint the
+- First, it will output a value indicating the *color to paint the
     panel* the robot is over: `0` means to paint the panel *black*, and
     `1` means to paint the panel *white*.
--   Second, it will output a value indicating the *direction the robot
+- Second, it will output a value indicating the *direction the robot
     should turn*: `0` means it should turn *left 90 degrees*, and `1`
     means it should turn *right 90 degrees*.
 
@@ -106,3 +106,76 @@ Build a new emergency hull painting robot and run the Intcode program on
 it. *How many panels does it paint at least once?*
 
 To begin, <a href="11/input" target="_blank">get your puzzle input</a>.
+
+```elixir
+defmodule Intcode do
+  use GenServer
+
+  import Enum, only: [at: 2]
+
+  defstruct(:position, :data, :relbase)
+
+  def handle_cast(:run, state) do
+    {:noreply, state, {:continue, :step}}
+  end
+
+  def handle_continue(:step, s) do
+    s.position
+    |> get()
+    |> Kernel.+(100_000)
+    |> Integer.digits()
+    |> case do
+      [_, _, _, _, 9, 9] -> nil
+      [_, m3, m2, m1, _, 1] -> {:add, [m1, m2, m3]}
+      [_, m3, m2, m1, _, 2] -> {:mul, [m1, m2, m3]}
+      [_, _, _, m1, _, 3] -> {:in, [m1]}
+      [_, _, _, m1, _, 4] -> {:out, [m1]}
+      [_, _, m2, m1, _, 5] -> {:jif, [m1, m2]}
+      [_, _, m2, m1, _, 6] -> {:jun, [m1, m2]}
+      [_, m3, m2, m1, _, 7] -> {:lt, [m1, m2, m3]}
+      [_, m3, m2, m1, _, 8] -> {:eq, [m1, m2, m3]}
+      [_, _, _, m1, _, 9] -> {:reg, [m1]}
+    end
+    |> case do
+      nil ->
+        {:noreply, s}
+
+      {cmd, modes} ->
+        args =
+          modes
+          |> Enum.with_index(s.position + 1)
+          |> Enum.map(fn
+            {0, n} -> get(n)
+            {1, n} -> n
+            {2, n} -> get(n) + get(:base)
+          end)
+
+        execute(cmd, args)
+        s = update_in(s.position, &(&1 + length(modes) + 1))
+        {:noreply, s, {:continue, run}}
+    end
+  end
+
+  def execute(:add, [a, b, c]), do: put(c, get(a) + get(b))
+  def execute(:mul, [a, b, c]), do: put(c, get(a) * get(b))
+
+  def execute(:in, [a]) do
+    receive do
+      n -> put(a, n)
+    end
+  end
+
+  def execute(:out, args) do
+    {:noreply, state}
+  end
+
+  def execute(:jif, [a, b]), do: if(get(a) != 0, do: {:jump, get(b)})
+  def execute(:jun, [a, b]), do: if(get(a) == 0, do: {:jump, get(b)})
+  def execute(:lt, [a, b, c]), do: put(c, if(get(a) < get(b), do: 1, else: 0))
+  def execute(:eq, [a, b, c]), do: put(c, if(get(a) == get(b), do: 1, else: 0))
+  def execute(:reg, [a]), do: put(:base, get(:base) + get(a))
+
+  defp get(key), do: Process.get(key, 0)
+  defp put(key, value), do: Process.put(key, value)
+end
+```
