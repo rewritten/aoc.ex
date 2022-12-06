@@ -1,4 +1,10 @@
-## --- Day 1: Sonar Sweep ---
+# Day 1: Sonar Sweep
+
+```elixir
+text = File.read!("input/2022/1.txt")
+```
+
+## Sonar Sweep
 
 You're minding your own business on a ship at sea when the overboard
 alarm goes off! You rush to see if you can help. Apparently, one of the
@@ -69,7 +75,10 @@ previous measurement.
 
 Your puzzle answer was `1228`.
 
-## --- Part Two ---
+```elixir
+```
+
+## Part Two
 
 Considering every single measurement isn't as useful as you expected:
 there's just too much noise in the data.
@@ -120,3 +129,5 @@ Consider sums of a three-measurement sliding window. *How many sums are
 larger than the previous sum?*
 
 Your puzzle answer was `1257`.
+```elixir
+```

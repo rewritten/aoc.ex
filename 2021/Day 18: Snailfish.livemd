@@ -1,9 +1,16 @@
-## --- Day 18: Snailfish ---
+# Day 18: Snailfish
+
+```elixir
+text = File.read!("input/2022/18.txt")
+```
+
+## Snailfish
 
 You descend into the ocean trench and encounter some
-[snailfish](https://en.wikipedia.org/wiki/Snailfish). They say they saw
-the sleigh keys! They'll even tell you which direction the keys went if
-you help one of the smaller snailfish with his *<span
+<a href="https://en.wikipedia.org/wiki/Snailfish"
+target="_blank">snailfish</a>. They say they saw the sleigh keys!
+They'll even tell you which direction the keys went if you help one of
+the smaller snailfish with his *<span
 title="Snailfish math is snailfish math!">math</span> homework*.
 
 Snailfish numbers aren't like regular numbers. Instead, every snailfish
@@ -34,10 +41,10 @@ numbers that need to be reduced.
 To *reduce a snailfish number*, you must repeatedly do the first action
 in this list that applies to the snailfish number:
 
--   If any pair is *nested inside four pairs*, the leftmost such pair
-    *explodes*.
--   If any regular number is *10 or greater*, the leftmost such regular
-    number *splits*.
+- If any pair is *nested inside four pairs*, the leftmost such pair
+  *explodes*.
+- If any regular number is *10 or greater*, the leftmost such regular
+  number *splits*.
 
 Once no action in the above list applies, the snailfish number is
 reduced.
@@ -56,19 +63,20 @@ number `0`.
 
 Here are some examples of a single explode action:
 
--   `[[[[[9,8],1],2],3],4]` becomes `[[[[0,9],2],3],4]` (the `9` has no
-    regular number to its left, so it is not added to any regular
-    number).
--   `[7,[6,[5,[4,[3,2]]]]]` becomes `[7,[6,[5,[7,0]]]]` (the `2` has no
-    regular number to its right, and so it is not added to any regular
-    number).
--   `[[6,[5,[4,[3,2]]]],1]` becomes `[[6,[5,[7,0]]],3]`.
--   `[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]` becomes
-    `[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]` (the pair `[3,2]` is unaffected
-    because the pair `[7,3]` is further to the left; `[3,2]` would
-    explode on the next action).
--   `[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]` becomes
-    `[[3,[2,[8,0]]],[9,[5,[7,0]]]]`.
+- `[[[[`*`[9,8]`*`,1],2],3],4]` becomes `[[[[`*`0`*`,`*`9`*`],2],3],4]`
+  (the `9` has no regular number to its left, so it is not added to any
+  regular number).
+- `[7,[6,[5,[4,`*`[3,2]`*`]]]]` becomes `[7,[6,[5,[`*`7`*`,`*`0`*`]]]]`
+  (the `2` has no regular number to its right, and so it is not added to
+  any regular number).
+- `[[6,[5,[4,`*`[3,2]`*`]]],1]` becomes
+  `[[6,[5,[`*`7`*`,`*`0`*`]]],`*`3`*`]`.
+- `[[3,[2,[1,`*`[7,3]`*`]]],[6,[5,[4,[3,2]]]]]` becomes
+  `[[3,[2,[`*`8`*`,`*`0`*`]]],[`*`9`*`,[5,[4,[3,2]]]]]` (the pair
+  `[3,2]` is unaffected because the pair `[7,3]` is further to the left;
+  `[3,2]` would explode on the next action).
+- `[[3,[2,[8,0]]],[9,[5,[4,`*`[3,2]`*`]]]]` becomes
+  `[[3,[2,[8,0]]],[9,[5,[`*`7`*`,`*`0`*`]]]]`.
 
 To *split* a regular number, replace it with a pair; the left element of
 the pair should be the regular number divided by two and rounded *down*,
@@ -179,19 +187,19 @@ times the magnitude of its left element plus 2 times the magnitude of
 its right element. The magnitude of a regular number is just that
 number.
 
-For example, the magnitude of `[9,1]` is `3*9 + 2*1 = 29`; the magnitude
-of `[1,9]` is `3*1 + 2*9 = 21`. Magnitude calculations are recursive:
-the magnitude of `[[9,1],[1,9]]` is `3*29 + 2*21 = 129`.
+For example, the magnitude of `[9,1]` is `3*9 + 2*1 = `*`29`*; the
+magnitude of `[1,9]` is `3*1 + 2*9 = `*`21`*. Magnitude calculations are
+recursive: the magnitude of `[[9,1],[1,9]]` is `3*29 + 2*21 = `*`129`*.
 
 Here are a few more magnitude examples:
 
--   `[[1,2],[[3,4],5]]` becomes `143`.
--   `[[[[0,7],4],[[7,8],[6,0]]],[8,1]]` becomes `1384`.
--   `[[[[1,1],[2,2]],[3,3]],[4,4]]` becomes `445`.
--   `[[[[3,0],[5,3]],[4,4]],[5,5]]` becomes `791`.
--   `[[[[5,0],[7,4]],[5,5]],[6,6]]` becomes `1137`.
--   `[[[[8,7],[7,7]],[[8,6],[7,7]]],[[[0,7],[6,6]],[8,7]]]` becomes
-    `3488`.
+- `[[1,2],[[3,4],5]]` becomes *`143`*.
+- `[[[[0,7],4],[[7,8],[6,0]]],[8,1]]` becomes *`1384`*.
+- `[[[[1,1],[2,2]],[3,3]],[4,4]]` becomes *`445`*.
+- `[[[[3,0],[5,3]],[4,4]],[5,5]]` becomes *`791`*.
+- `[[[[5,0],[7,4]],[5,5]],[6,6]]` becomes *`1137`*.
+- `[[[[8,7],[7,7]],[[8,6],[7,7]]],[[[0,7],[6,6]],[8,7]]]` becomes
+  *`3488`*.
 
 So, given this example homework assignment:
 
@@ -210,14 +218,17 @@ The final sum is:
 
     [[[[6,6],[7,6]],[[7,7],[7,0]]],[[[7,7],[7,7]],[[7,8],[9,9]]]]
 
-The magnitude of this final sum is `4140`.
+The magnitude of this final sum is *`4140`*.
 
 Add up all of the snailfish numbers from the homework assignment in the
 order they appear. *What is the magnitude of the final sum?*
 
 Your puzzle answer was `2907`.
 
-## --- Part Two ---
+```elixir
+```
+
+## Part Two
 
 You notice a second question on the back of the homework assignment:
 
@@ -225,8 +236,9 @@ What is the largest magnitude you can get from adding only two of the
 snailfish numbers?
 
 Note that snailfish addition is not
-[commutative](https://en.wikipedia.org/wiki/Commutative_property) - that
-is, `x + y` and `y + x` can produce different results.
+<a href="https://en.wikipedia.org/wiki/Commutative_property"
+target="_blank">commutative</a> - that is, `x + y` and `y + x` can
+produce different results.
 
 Again considering the last example homework assignment above:
 
@@ -242,7 +254,7 @@ Again considering the last example homework assignment above:
     [[[[5,2],5],[8,[3,7]]],[[5,[7,5]],[4,4]]]
 
 The largest magnitude of the sum of any two snailfish numbers in this
-list is `3993`. This is the magnitude of
+list is *`3993`*. This is the magnitude of
 `[[2,[[7,7],7]],[[5,8],[[9,3],[0,2]]]]` +
 `[[[0,[5,8]],[[1,7],[9,6]]],[[4,[1,2]],[[1,4],2]]]`, which reduces to
 `[[[[7,8],[6,6]],[[6,0],[7,7]]],[[[7,8],[8,8]],[[7,9],[0,6]]]]`.
@@ -251,3 +263,5 @@ list is `3993`. This is the magnitude of
 numbers from the homework assignment?*
 
 Your puzzle answer was `4690`.
+```elixir
+```

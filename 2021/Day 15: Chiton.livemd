@@ -1,10 +1,17 @@
-## --- Day 15: Chiton ---
+# Day 15: Chiton
+
+```elixir
+text = File.read!("input/2022/15.txt")
+```
+
+## Chiton
 
 You've almost reached the exit of the cave, but the walls are getting
 closer together. Your submarine can barely still fit, though; the main
 problem is that the walls of the cave are covered in
-[chitons](https://en.wikipedia.org/wiki/Chiton), and it would be best
-not to bump any of them.
+<a href="https://en.wikipedia.org/wiki/Chiton"
+target="_blank">chitons</a>, and it would be best not to bump any of
+them.
 
 The cavern is large, but has a very low ceiling, restricting your motion
 to two dimensions. The shape of the cavern resembles a square; a quick
@@ -45,7 +52,7 @@ example, a path with the lowest total risk is highlighted here:
     1293138521
     2311944581
 
-The total risk of this path is `40` (the starting position is never
+The total risk of this path is *`40`* (the starting position is never
 entered, so its risk is not counted).
 
 *What is the lowest total risk of any path from the top left to the
@@ -53,7 +60,10 @@ bottom right?*
 
 Your puzzle answer was `707`.
 
-## --- Part Two ---
+```elixir
+```
+
+## Part Two
 
 Now that you know how to find low-risk paths in the cave, you can try to
 find your way out.
@@ -186,10 +196,12 @@ corner to the bottom right corner with the lowest total risk:
     56475739656758684176786979528789718163989182927419
     67554889357866599146897761125791887223681299833479
 
-The total risk of this path is `315` (the starting position is still
+The total risk of this path is *`315`* (the starting position is still
 never entered, so its risk is not counted).
 
 Using the full map, *what is the lowest total risk of any path from the
 top left to the bottom right?*
 
 Your puzzle answer was `2942`.
+```elixir
+```

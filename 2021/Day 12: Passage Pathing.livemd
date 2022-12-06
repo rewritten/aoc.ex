@@ -1,4 +1,10 @@
-## --- Day 12: Passage Pathing ---
+# Day 12: Passage Pathing
+
+```elixir
+text = File.read!("input/2022/12.txt")
+```
+
+## Passage Pathing
 
 With your <span title="Sublime.">submarine's subterranean subsystems
 subsisting suboptimally</span>, the only way you're getting out of this
@@ -39,7 +45,7 @@ enough that it might be worth visiting them multiple times. So, all
 paths you find should *visit small caves at most once*, and can *visit
 big caves any number of times*.
 
-Given these rules, there are `10` paths through this example cave
+Given these rules, there are *`10`* paths through this example cave
 system:
 
     start,A,b,A,c,A,end
@@ -123,7 +129,10 @@ caves at most once?*
 
 Your puzzle answer was `3369`.
 
-## --- Part Two ---
+```elixir
+```
+
+## Part Two
 
 After reviewing the available paths, you realize you might have time to
 visit a single small cave *twice*. Specifically, big caves can be
@@ -179,3 +188,5 @@ Given these new rules, *how many paths through this cave system are
 there?*
 
 Your puzzle answer was `85883`.
+```elixir
+```

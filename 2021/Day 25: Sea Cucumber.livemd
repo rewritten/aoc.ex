@@ -1,4 +1,10 @@
-## --- Day 25: Sea Cucumber ---
+# Day 25: Sea Cucumber
+
+```elixir
+text = File.read!("input/2022/25.txt")
+```
+
+## Sea Cucumber
 
 This is it: the bottom of the ocean trench, the last place the sleigh
 keys could be. Your submarine's experimental antenna *still isn't
@@ -6,9 +12,10 @@ boosted enough* to detect the keys, but they *must* be here. All you
 need to do is *reach the seafloor* and find them.
 
 At least, you'd touch down on the seafloor if you could; unfortunately,
-it's completely covered by two large herds of [sea
-cucumbers](https://en.wikipedia.org/wiki/Sea_cucumber), and there isn't
-an open space large enough for your submarine.
+it's completely covered by two large herds of
+<a href="https://en.wikipedia.org/wiki/Sea_cucumber" target="_blank">sea
+cucumbers</a>, and there isn't an open space large enough for your
+submarine.
 
 You suspect that the Elves must have done this before, because just then
 you discover the phone number of a deep-sea marine biologist on a
@@ -314,14 +321,17 @@ stop moving. Again consider the first example:
     >vv......>
     .>v.vv.v..
 
-In this example, the sea cucumbers stop moving after `58` steps.
+In this example, the sea cucumbers stop moving after *`58`* steps.
 
 Find somewhere safe to land your submarine. *What is the first step on
 which no sea cucumbers move?*
 
 Your puzzle answer was `417`.
 
-## --- Part Two ---
+```elixir
+```
+
+## Part Two
 
 Suddenly, the experimental antenna control console lights up:
 
@@ -355,3 +365,5 @@ The experimental antenna control console lights up again:
 Only *49 stars* to go.
 
 If you like, you can .
+```elixir
+```

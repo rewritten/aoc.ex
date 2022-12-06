@@ -1,12 +1,19 @@
-## --- Day 6: Lanternfish ---
+# Day 6: Lanternfish
+
+```elixir
+text = File.read!("input/2022/6.txt")
+```
+
+## Lanternfish
 
 The sea floor is getting steeper. Maybe the sleigh keys got carried this
 way?
 
 A massive school of glowing
-[lanternfish](https://en.wikipedia.org/wiki/Lanternfish) swims past.
-They must spawn quickly to reach such large numbers - maybe
-*exponentially* quickly? You should model their growth rate to be sure.
+<a href="https://en.wikipedia.org/wiki/Lanternfish"
+target="_blank">lanternfish</a> swims past. They must spawn quickly to
+reach such large numbers - maybe *exponentially* quickly? You should
+model their growth rate to be sure.
 
 Although you know nothing about this specific species of lanternfish,
 you make some guesses about their attributes. Surely, <span
@@ -25,14 +32,14 @@ for its first cycle.
 
 So, suppose you have a lanternfish with an internal timer value of `3`:
 
--   After one day, its internal timer would become `2`.
--   After another day, its internal timer would become `1`.
--   After another day, its internal timer would become `0`.
--   After another day, its internal timer would reset to `6`, and it
-    would create a *new* lanternfish with an internal timer of `8`.
--   After another day, the first lanternfish would have an internal
-    timer of `5`, and the second lanternfish would have an internal
-    timer of `7`.
+- After one day, its internal timer would become `2`.
+- After another day, its internal timer would become `1`.
+- After another day, its internal timer would become `0`.
+- After another day, its internal timer would reset to `6`, and it would
+  create a *new* lanternfish with an internal timer of `8`.
+- After another day, the first lanternfish would have an internal timer
+  of `5`, and the second lanternfish would have an internal timer of
+  `7`.
 
 A lanternfish that creates a new fish resets its timer to `6`, *not `7`*
 (because `0` is included as a valid timer value). The new lanternfish
@@ -75,21 +82,26 @@ while each other number decreases by 1 if it was present at the start of
 the day.
 
 In this example, after 18 days, there are a total of `26` fish. After 80
-days, there would be a total of `5934`.
+days, there would be a total of *`5934`*.
 
 Find a way to simulate lanternfish. *How many lanternfish would there be
 after 80 days?*
 
 Your puzzle answer was `393019`.
 
-## --- Part Two ---
+```elixir
+```
+
+## Part Two
 
 Suppose the lanternfish live forever and have unlimited food and space.
 Would they take over the entire ocean?
 
 After 256 days in the example above, there would be a total of
-`26984457539` lanternfish!
+*`26984457539`* lanternfish!
 
 *How many lanternfish would there be after 256 days?*
 
 Your puzzle answer was `1757714216975`.
+```elixir
+```

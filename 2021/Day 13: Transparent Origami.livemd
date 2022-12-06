@@ -1,4 +1,10 @@
-## --- Day 13: Transparent Origami ---
+# Day 13: Transparent Origami
+
+```elixir
+text = File.read!("input/2022/13.txt")
+```
+
+## Transparent Origami
 
 You reach another volcanically active part of the cave. It would be nice
 if you could do some kind of thermal imaging so you could tell ahead of
@@ -12,10 +18,11 @@ When you activate it, you are greeted with:
 
 Apparently, the Elves have never used this feature. To your surprise,
 you manage to find the manual; as you go to open it, page 1 falls out.
-It's a large sheet of [transparent
-paper](https://en.wikipedia.org/wiki/Transparency_(projection))! The
-transparent paper is marked with random dots and includes instructions
-on how to fold it up (your puzzle input). For example:
+It's a large sheet of
+<a href="https://en.wikipedia.org/wiki/Transparency_(projection)"
+target="_blank">transparent paper</a>! The transparent paper is marked
+with random dots and includes instructions on how to fold it up (your
+puzzle input). For example:
 
     6,10
     0,14
@@ -134,7 +141,7 @@ The instructions made a square!
 
 The transparent paper is pretty big, so for now, focus on just
 completing the first fold. After the first fold in the example above,
-`17` dots are visible - dots that end up overlapping after the fold is
+*`17`* dots are visible - dots that end up overlapping after the fold is
 completed count as a single dot.
 
 *How many dots are visible after completing just the first fold
@@ -142,7 +149,10 @@ instruction on your transparent paper?*
 
 Your puzzle answer was `788`.
 
-## --- Part Two ---
+```elixir
+```
+
+## Part Two
 
 <span
 title="How can you fold it that many times? You tell me, I'm not the one folding it.">Finish
@@ -153,3 +163,5 @@ manual says the code is always *eight capital letters*.
 system?*
 
 Your puzzle answer was `KJBKEUBG`.
+```elixir
+```
