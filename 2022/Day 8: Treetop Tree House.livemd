@@ -77,47 +77,40 @@ map =
     end
   end
 
-map2 = Enum.zip_with(map, & &1)
+is_open = fn
+  [_] -> true
+  [h | t] -> h > Enum.max(t)
+end
 
-visible = MapSet.new()
+sublists = fn list -> list |> Stream.iterate(&tl/1) |> Enum.take_while(&(&1 != [])) end
 
-visible =
-  for {line, x} <- Enum.with_index(map), reduce: visible do
-    acc ->
-      [{line, &(length(line) - &1)}, {Enum.reverse(line), &(&1 - 1)}]
-      |> Enum.map(fn {list, fun} ->
-        list
-        |> Stream.iterate(&tl/1)
-        |> Enum.take(length(list))
-        |> Enum.filter(fn
-          [_] -> true
-          [h | t] -> h > Enum.max(t)
-        end)
-        |> Enum.map(&length/1)
-        |> MapSet.new(&{x, fun.(&1)})
-      end)
-      |> Enum.reduce(acc, &MapSet.union/2)
-  end
+rows = Enum.with_index(map)
+cols = map |> Enum.zip_with(& &1) |> Enum.with_index()
 
-visible =
-  for {line, x} <- Enum.with_index(map2), reduce: visible do
-    acc ->
-      [{line, &(length(line) - &1)}, {Enum.reverse(line), &(&1 - 1)}]
-      |> Enum.map(fn {list, fun} ->
-        list
-        |> Stream.iterate(&tl/1)
-        |> Enum.take(length(list))
-        |> Enum.filter(fn
-          [_] -> true
-          [h | t] -> h > Enum.max(t)
-        end)
-        |> Enum.map(&length/1)
-        |> MapSet.new(&{fun.(&1), x})
-      end)
-      |> Enum.reduce(acc, &MapSet.union/2)
-  end
-
-MapSet.size(visible)
+[
+  MapSet.new(
+    for {row, x} <- rows, ray <- sublists.(row), is_open.(ray) do
+      {x, length(row) - length(ray)}
+    end
+  ),
+  MapSet.new(
+    for {row, x} <- rows, ray <- sublists.(Enum.reverse(row)), is_open.(ray) do
+      {x, length(ray) - 1}
+    end
+  ),
+  MapSet.new(
+    for {col, y} <- cols, ray <- sublists.(col), is_open.(ray) do
+      {length(col) - length(ray), y}
+    end
+  ),
+  MapSet.new(
+    for {col, y} <- cols, ray <- sublists.(Enum.reverse(col)), is_open.(ray) do
+      {length(ray) - 1, y}
+    end
+  )
+]
+|> Enum.reduce(&MapSet.union/2)
+|> MapSet.size()
 ```
 
 ## Part Two
@@ -193,6 +186,10 @@ ray = fn line, height ->
     {_, idx} -> idx + 1
   end
 end
+
+Map.new(for {line, x} <- Enum.with_index(map), {c, y} <- Enum.with_index(line), x in 1..98,  do
+  
+end)
 
 scores =
   for {line, x} <- Enum.with_index(map), {c, y} <- Enum.with_index(line), reduce: scores do
