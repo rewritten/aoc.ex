@@ -70,47 +70,60 @@ _text = """
 ```
 
 ```elixir
-map =
-  for line <- String.split(text, "\n", trim: true) do
-    for c <- String.to_charlist(line) do
-      c - ?0
-    end
+defmodule Vis do
+  def sublists([]), do: []
+  def sublists(list), do: [list | sublists(tl(list))]
+
+  def open?([_]), do: true
+  def open?([h | t]), do: h > Enum.max(t)
+end
+```
+
+```elixir
+defmodule Ray do
+  def from({x, y}, ?U), do: Stream.iterate({x, y}, fn {x, y} -> {x, y + 1} end)
+  def from({x, y}, ?D), do: Stream.iterate({x, y}, fn {x, y} -> {x, y - 1} end)
+  def from({x, y}, ?L), do: Stream.iterate({x, y}, fn {x, y} -> {x - 1, y} end)
+  def from({x, y}, ?R), do: Stream.iterate({x, y}, fn {x, y} -> {x + 1, y} end)
+
+  def visible_trees(ray, heights) do
+    ray
+    |> Enum.reduce({-1, []}, fn
+      point, {last, seen} ->
+        if heights[point] > last,
+          do: {heights[point], [point | seen]},
+          else: {last, seen}
+    end)
+    |> elem(1)
   end
 
-is_open = fn
-  [_] -> true
-  [h | t] -> h > Enum.max(t)
+  def cut(ray, heights),
+    do: ray |> Stream.take_while(&is_map_key(heights, &1)) |> Enum.to_list()
 end
+```
 
-sublists = fn list -> list |> Stream.iterate(&tl/1) |> Enum.take_while(&(&1 != [])) end
+```elixir
+map =
+  for {line, x} <- text |> String.split("\n", trim: true) |> Enum.with_index(),
+      {c, y} <- line |> String.to_charlist() |> Enum.with_index(),
+      into: %{},
+      do: {{x, y}, c - ?0}
 
-rows = Enum.with_index(map)
-cols = map |> Enum.zip_with(& &1) |> Enum.with_index()
+max = Enum.max(for {{x, _}, _} <- map, do: x)
 
-[
-  MapSet.new(
-    for {row, x} <- rows, ray <- sublists.(row), is_open.(ray) do
-      {x, length(row) - length(ray)}
-    end
-  ),
-  MapSet.new(
-    for {row, x} <- rows, ray <- sublists.(Enum.reverse(row)), is_open.(ray) do
-      {x, length(ray) - 1}
-    end
-  ),
-  MapSet.new(
-    for {col, y} <- cols, ray <- sublists.(col), is_open.(ray) do
-      {length(col) - length(ray), y}
-    end
-  ),
-  MapSet.new(
-    for {col, y} <- cols, ray <- sublists.(Enum.reverse(col)), is_open.(ray) do
-      {length(ray) - 1, y}
-    end
-  )
-]
-|> Enum.reduce(&MapSet.union/2)
-|> MapSet.size()
+visible =
+  for i <- 0..max,
+      ray <- [
+        Ray.from({i, 0}, ?U),
+        Ray.from({i, max}, ?D),
+        Ray.from({0, i}, ?R),
+        Ray.from({max, i}, ?L)
+      ],
+      tree <- ray |> Ray.cut(map) |> Ray.visible_trees(map),
+      into: MapSet.new(),
+      do: tree
+
+MapSet.size(visible)
 ```
 
 ## Part Two
@@ -177,41 +190,19 @@ Consider each tree on your map. *What is the highest scenic score
 possible for any tree?*
 
 ```elixir
-scores = %{}
+for {{x, y} = pos, h} <- map, x > 0, x < max, y > 0, y < max, reduce: 0 do
+  acc ->
+    [l, r, u, d] =
+      for dir <- 'LRUD' do
+        line = pos |> Ray.from(dir) |> Ray.cut(map) |> tl()
 
-ray = fn line, height ->
-  case {line, Enum.find_index(line, &(&1 >= height))} do
-    {[], _} -> 0
-    {_, nil} -> length(line)
-    {_, idx} -> idx + 1
-  end
+        case Enum.find_index(line, &(map[&1] >= h)) do
+          nil -> length(line)
+          idx -> idx + 1
+        end
+      end
+
+    s = l * r * u * d
+    if s > acc, do: s, else: acc
 end
-
-Map.new(for {line, x} <- Enum.with_index(map), {c, y} <- Enum.with_index(line), x in 1..98,  do
-  
-end)
-
-scores =
-  for {line, x} <- Enum.with_index(map), {c, y} <- Enum.with_index(line), reduce: scores do
-    acc ->
-      left_ray = line |> Enum.take(y) |> Enum.reverse()
-      left_length = ray.(left_ray, c)
-      right_ray = line |> Enum.drop(y + 1)
-      right_length = ray.(right_ray, c)
-      score = left_length * right_length
-      Map.update(acc, {x, y}, score, &(&1 * score))
-  end
-
-scores =
-  for {line, x} <- Enum.with_index(map2), {c, y} <- Enum.with_index(line), reduce: scores do
-    acc ->
-      left_ray = line |> Enum.take(y) |> Enum.reverse()
-      left_length = ray.(left_ray, c)
-      right_ray = line |> Enum.drop(y + 1)
-      right_length = ray.(right_ray, c)
-      score = left_length * right_length
-      Map.update(acc, {y, x}, score, &(&1 * score))
-  end
-
-scores |> Map.values() |> Enum.max()
 ```
