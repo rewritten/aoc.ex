@@ -241,14 +241,14 @@ Find the signal strength during the 20th, 60th, 100th, 140th, 180th, and
 ```elixir
 text
 |> String.split()
-|> Stream.transform(1, fn
+|> Enum.flat_map_reduce(1, fn
   instr, reg when instr in ~w[noop addx] -> {[reg], reg}
   number, reg -> {[reg], reg + String.to_integer(number)}
 end)
-|> Stream.with_index(1)
-|> Stream.drop(19)
-|> Stream.take_every(40)
-|> Enum.take(6)
+|> elem(0)
+|> Enum.with_index(1)
+|> Enum.drop(19)
+|> Enum.take_every(40)
 |> Enum.map(fn {reg, idx} -> reg * idx end)
 |> Enum.sum()
 ```
@@ -412,12 +412,13 @@ appear on your CRT?*
 ```elixir
 text
 |> String.split()
-|> Stream.transform(1, fn
+|> Enum.flat_map_reduce(1, fn
   instr, reg when instr in ~w[noop addx] -> {[reg], reg}
   number, reg -> {[reg], reg + String.to_integer(number)}
 end)
-|> Stream.zip(Stream.cycle(0..39))
-|> Enum.map(fn {reg, pos} -> if (reg - pos) in -1..1, do: "⬛️", else: "⬜️" end)
+|> elem(0)
+|> Enum.with_index()
+|> Enum.map(fn {reg, pos} -> if (reg - rem(pos, 40)) in -1..1, do: "⬛️", else: "⬜️" end)
 |> Enum.chunk_every(40)
 |> Enum.each(&IO.puts/1)
 ```
