@@ -29,45 +29,41 @@ defmodule Parser do
       for [_, _, _, test, _, _] <- decisions, reduce: 1 do
         acc -> acc * (test |> String.split(" by ") |> List.last() |> String.to_integer())
       end
-      |> Enum.reduce(&(&1 * &2))
 
     [
       Code.string_to_quoted!("def start, do: #{inspect(starts)}"),
       for {[_, _, op, _, _, _], i} <- Enum.with_index(decisions) do
         op = String.replace_prefix(op, "  Operation: new = ", "")
-        head = "def insp({#{i}, old, i}, "
 
         [
-          Code.string_to_quoted!(head <> ":relaxed), do: {#{i}, div(#{op}, 3), i}"),
-          Code.string_to_quoted!(head <> ":nervous), do: {#{i}, rem(#{op}, #{lcm}), i}")
+          Code.string_to_quoted!(
+            "def insp({#{i}, old, i}, :relaxed), do: {#{i}, div(#{op}, 3), i}"
+          ),
+          Code.string_to_quoted!(
+            "def insp({#{i}, old, i}, :nervous), do: {#{i}, rem(#{op}, #{lcm}), i}"
+          )
         ]
       end,
       for {[_, _, _, test, ift, iff], i} <- Enum.with_index(decisions) do
         ift = ift |> String.split(" monkey ") |> List.last() |> String.to_integer()
         iff = iff |> String.split(" monkey ") |> List.last() |> String.to_integer()
         test = String.replace_prefix(test, "  Test: divisible by ", "")
-        head = "def toss({#{i}, n, i})"
-        guard = " when rem(n, #{test}) == 0"
 
         [
           Code.string_to_quoted!(
-            head <> guard <> ", do: {#{ift}, n, i#{if ift < i, do: " + 1"}}"
+            "def toss({#{i}, n, i}) when rem(n, #{test}) == 0, do: {#{ift}, n, i#{if ift < i, do: " + 1"}}"
           ),
-          Code.string_to_quoted!(head <> ", do: {#{iff}, n, i#{if iff < i, do: " + 1"}}")
+          Code.string_to_quoted!(
+            "def toss({#{i}, n, i}), do: {#{iff}, n, i#{if iff < i, do: " + 1"}}"
+          )
         ]
-      end,
-      quote do
-        def run(start, mode) do
-          start |> Stream.iterate(&(&1 |> insp(mode) |> toss())) |> Stream.chunk_by(&elem(&1, 2))
-        end
       end,
       quote do
         def run!(rounds, mode) do
           for item <- start() do
             item
-            |> run(mode)
-            |> Enum.take(rounds)
-            |> List.flatten()
+            |> Stream.iterate(&(&1 |> insp(mode) |> toss()))
+            |> Enum.take_while(fn {_, _, r} -> r < rounds end)
             |> Enum.map(&elem(&1, 0))
           end
           |> List.flatten()
