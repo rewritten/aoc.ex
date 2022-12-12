@@ -1,0 +1,112 @@
+# Day 12: Hill Climbing Algorithm
+
+```elixir
+text = File.read!("Code/aoc.ex/input/2022/12.txt")
+```
+
+## Hill Climbing Algorithm
+
+```elixir
+example = """
+Sabqponm
+abcryxxl
+accszExk
+acctuvwj
+abdefghi
+"""
+```
+
+```elixir
+data =
+  for {l, x} <- text |> String.split("\n", trim: true) |> Enum.with_index(),
+      {c, y} <- l |> String.to_charlist() |> Enum.with_index(),
+      into: %{},
+      do: {{x, y}, c}
+
+start = data |> Enum.to_list() |> Enum.find(&match?({_, ?S}, &1)) |> elem(0)
+finish = data |> Enum.to_list() |> Enum.find(&match?({_, ?E}, &1)) |> elem(0)
+
+data = data |> Map.merge(%{start => ?a, finish => ?z})
+
+defmodule PriorityQueue do
+  def new(), do: %{}
+
+  def _in(%{} = this, cost, node) do
+    this
+    |> Map.put_new_lazy(cost, &:queue.new/0)
+    |> Map.update!(cost, &:queue.in(node, &1))
+  end
+
+  def out(%{} = this) do
+    cost = this |> Map.keys() |> Enum.min(fn -> nil end)
+    {{:value, item}, q2} = this |> Map.get(cost) |> :queue.out()
+
+    if :queue.is_empty(q2) do
+      {cost, item, Map.delete(this, cost)}
+    else
+      {cost, item, Map.put(this, cost, q2)}
+    end
+  end
+end
+
+defmodule Dijkstra do
+  def shortest_path(start, neighbors_fn, finish_condition) do
+    pq = PriorityQueue.new() |> PriorityQueue._in(0, start)
+    visited = MapSet.new()
+
+    Stream.unfold({pq, visited}, fn {queue, visited} ->
+      {current_cost, node, queue} = PriorityQueue.out(queue)
+
+      if MapSet.member?(visited, node) do
+        {nil, {queue, visited}}
+      else
+        queue =
+          for {neighbor, cost} <- neighbors_fn.(node),
+              !MapSet.member?(visited, neighbor),
+              reduce: queue do
+            pq -> PriorityQueue._in(pq, cost + current_cost, neighbor)
+          end
+
+        visited = MapSet.put(visited, node)
+
+        {{current_cost, node}, {queue, visited}}
+      end
+    end)
+    |> Stream.drop(1)
+    |> Stream.reject(&is_nil/1)
+    |> Enum.find(finish_condition)
+  end
+end
+```
+
+## Part One
+
+```elixir
+Dijkstra.shortest_path(
+  start,
+  fn {x, y} ->
+    for pair <- [{x - 1, y}, {x + 1, y}, {x, y - 1}, {x, y + 1}],
+        is_map_key(data, pair),
+        Map.get(data, pair) <= Map.get(data, {x, y}) + 1,
+        do: {pair, 1}
+  end,
+  &match?({_cost, ^finish}, &1)
+)
+|> elem(0)
+```
+
+## Part Two
+
+```elixir
+Dijkstra.shortest_path(
+  finish,
+  fn {x, y} ->
+    for pair <- [{x - 1, y}, {x + 1, y}, {x, y - 1}, {x, y + 1}],
+        is_map_key(data, pair),
+        Map.get(data, {x, y}) <= Map.get(data, pair) + 1,
+        do: {pair, 1}
+  end,
+  fn {_cost, node} -> Map.get(data, node) == ?a end
+)
+|> elem(0)
+```
