@@ -1,6 +1,8 @@
 # Day 11: Monkey in the Middle
 
 ```elixir
+Mix.install(nimble_parsec: ">= 1.2.3")
+
 text = File.read!("Code/aoc.ex/input/2022/11.txt")
 ```
 
@@ -11,123 +13,120 @@ text = File.read!("Code/aoc.ex/input/2022/11.txt")
 ## Parser
 
 ```elixir
-defmodule Parser do
-  defmacro __using__(opts) do
-    source = opts[:input] |> Code.eval_quoted() |> elem(0)
+defmodule MonkeyMaster do
+  defmodule Parser do
+    import NimbleParsec
 
-    decisions =
-      for par <- String.split(source, "\n\n", trim: true) do
-        String.split(par, "\n", trim: true)
+    monkey =
+      ignore(repeat(ascii_char(not: ?0..?9)))
+      |> unwrap_and_tag(integer(min: 1), :index)
+      |> ignore(repeat(ascii_char(not: ?0..?9)))
+      |> unwrap_and_tag(integer(min: 1), :start)
+      |> repeat(ignore(string(", ")) |> unwrap_and_tag(integer(min: 1), :start))
+      |> ignore(repeat(ascii_char(not: ?=..?=)))
+      |> ignore(string("= "))
+      |> unwrap_and_tag(ascii_string([(?\n + 1)..255], min: 1), :op)
+      |> ignore(repeat(ascii_char(not: ?0..?9)))
+      |> unwrap_and_tag(integer(min: 1), :divisor)
+      |> ignore(repeat(ascii_char(not: ?0..?9)))
+      |> unwrap_and_tag(integer(min: 1), :if_true)
+      |> ignore(repeat(ascii_char(not: ?0..?9)))
+      |> unwrap_and_tag(integer(min: 1), :if_false)
+
+    input = wrap(monkey) |> repeat(ignore(string("\n\n")) |> wrap(monkey))
+
+    defparsec(:input, input)
+  end
+
+  defp toss({idx, item, round}, data, adjuster) do
+    monkey = elem(data, idx)
+    new_item = item |> then(monkey[:op]) |> then(adjuster)
+    new_idx = monkey[if(rem(new_item, monkey[:divisor]) == 0, do: :if_true, else: :if_false)]
+    new_round = if new_idx < idx, do: round + 1, else: round
+    {new_idx, new_item, new_round}
+  end
+
+  def run(data, mode, rounds) do
+    data =
+      data
+      |> MonkeyMaster.Parser.input()
+      |> elem(1)
+      |> update_in(
+        [Access.all(), Access.filter(&match?({:op, _}, &1)), Access.elem(1)],
+        &("fn old -> #{&1} end" |> Code.eval_string() |> elem(0))
+      )
+
+    lcm = data |> Enum.map(& &1[:divisor]) |> Enum.reduce(&Kernel.*/2)
+
+    adjuster =
+      case mode do
+        :angrily -> &rem(&1, lcm)
+        :nicely -> &div(&1, 3)
       end
 
-    starts =
-      for {[_, start, _, _, _, _], i} <- Enum.with_index(decisions),
-          [n] <- Regex.scan(~r|\d+|, start),
-          do: {i, String.to_integer(n), 0}
+    monkey_tuple = List.to_tuple(data)
 
-    lcm =
-      for [_, _, _, test, _, _] <- decisions, reduce: 1 do
-        acc -> acc * (test |> String.split(" by ") |> List.last() |> String.to_integer())
-      end
-
-    [
-      Code.string_to_quoted!("def start, do: #{inspect(starts)}"),
-      for {[_, _, op, _, _, _], i} <- Enum.with_index(decisions) do
-        op = String.replace_prefix(op, "  Operation: new = ", "")
-
-        [
-          Code.string_to_quoted!(
-            "def insp({#{i}, old, i}, :relaxed), do: {#{i}, div(#{op}, 3), i}"
-          ),
-          Code.string_to_quoted!(
-            "def insp({#{i}, old, i}, :nervous), do: {#{i}, rem(#{op}, #{lcm}), i}"
-          )
-        ]
-      end,
-      for {[_, _, _, test, ift, iff], i} <- Enum.with_index(decisions) do
-        ift = ift |> String.split(" monkey ") |> List.last() |> String.to_integer()
-        iff = iff |> String.split(" monkey ") |> List.last() |> String.to_integer()
-        test = String.replace_prefix(test, "  Test: divisible by ", "")
-
-        [
-          Code.string_to_quoted!(
-            "def toss({#{i}, n, i}) when rem(n, #{test}) == 0, do: {#{ift}, n, i#{if ift < i, do: " + 1"}}"
-          ),
-          Code.string_to_quoted!(
-            "def toss({#{i}, n, i}), do: {#{iff}, n, i#{if iff < i, do: " + 1"}}"
-          )
-        ]
-      end,
-      quote do
-        def run!(rounds, mode) do
-          for item <- start() do
-            item
-            |> Stream.iterate(&(&1 |> insp(mode) |> toss()))
-            |> Enum.take_while(fn {_, _, r} -> r < rounds end)
-            |> Enum.map(&elem(&1, 0))
-          end
-          |> List.flatten()
-          |> Enum.frequencies()
-          |> Map.values()
-          |> Enum.sort(:desc)
-          |> Enum.take(2)
-          |> Enum.reduce(&(&1 * &2))
-        end
-      end
-    ]
+    for monkey <- data,
+        item <- Keyword.get_values(monkey, :start),
+        stream = Stream.iterate({monkey[:index], item, 0}, &toss(&1, monkey_tuple, adjuster)),
+        result <- Enum.take_while(stream, &(elem(&1, 2) < rounds)) do
+      result
+    end
+    |> Enum.frequencies_by(&elem(&1, 0))
+    |> Map.values()
+    |> Enum.sort(:desc)
+    |> Enum.take(2)
+    |> Enum.reduce(&Kernel.*/2)
   end
 end
 ```
 
 ```elixir
-defmodule DecisionExample do
-  use Parser,
-    input: """
-    Monkey 0:
-      Starting items: 79, 98
-      Operation: new = old * 19
-      Test: divisible by 23
-        If true: throw to monkey 2
-        If false: throw to monkey 3
+example = """
+Monkey 0:
+  Starting items: 79, 98
+  Operation: new = old * 19
+  Test: divisible by 23
+    If true: throw to monkey 2
+    If false: throw to monkey 3
 
-    Monkey 1:
-      Starting items: 54, 65, 75, 74
-      Operation: new = old + 6
-      Test: divisible by 19
-        If true: throw to monkey 2
-        If false: throw to monkey 0
+Monkey 1:
+  Starting items: 54, 65, 75, 74
+  Operation: new = old + 6
+  Test: divisible by 19
+    If true: throw to monkey 2
+    If false: throw to monkey 0
 
-    Monkey 2:
-      Starting items: 79, 60, 97
-      Operation: new = old * old
-      Test: divisible by 13
-        If true: throw to monkey 1
-        If false: throw to monkey 3
+Monkey 2:
+  Starting items: 79, 60, 97
+  Operation: new = old * old
+  Test: divisible by 13
+    If true: throw to monkey 1
+    If false: throw to monkey 3
 
-    Monkey 3:
-      Starting items: 74
-      Operation: new = old + 3
-      Test: divisible by 17
-        If true: throw to monkey 0
-        If false: throw to monkey 1
-    """
-end
+Monkey 3:
+  Starting items: 74
+  Operation: new = old + 3
+  Test: divisible by 17
+    If true: throw to monkey 0
+    If false: throw to monkey 1
+"""
+
+MonkeyMaster.run(example, :nicely, 20)
 ```
 
 ```elixir
-defmodule Decision do
-  use Parser, input: File.read!("Code/aoc.ex/input/2022/11.txt")
-end
+MonkeyMaster.run(example, :angrily, 10_000)
 ```
 
-## Part One
-
 ```elixir
-Decision.run!(20, :relaxed)
+"Code/aoc.ex/input/2022/11.txt"
+|> File.read!()
+|> MonkeyMaster.run(:nicely, 20)
 ```
 
-## Part Two
-
 ```elixir
-Decision.run!(10_000, :nervous)
+"Code/aoc.ex/input/2022/11.txt"
+|> File.read!()
+|> MonkeyMaster.run(:angrily, 10_000)
 ```
