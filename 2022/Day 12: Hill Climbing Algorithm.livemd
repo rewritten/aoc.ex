@@ -1,6 +1,8 @@
 # Day 12: Hill Climbing Algorithm
 
 ```elixir
+Mix.install(heap: "2.0.2")
+
 text = File.read!("Code/aoc.ex/input/2022/12.txt")
 ```
 
@@ -27,7 +29,9 @@ start = data |> Enum.to_list() |> Enum.find(&match?({_, ?S}, &1)) |> elem(0)
 finish = data |> Enum.to_list() |> Enum.find(&match?({_, ?E}, &1)) |> elem(0)
 
 data = data |> Map.merge(%{start => ?a, finish => ?z})
+```
 
+```elixir
 defmodule PriorityQueue do
   def new(), do: %{}
 
@@ -48,14 +52,20 @@ defmodule PriorityQueue do
     end
   end
 end
+```
 
+```elixir
 defmodule Dijkstra do
+  @type item :: term
+  @type cost :: number
+
+  @spec shortest_path(item, (item -> [{item, cost}]), ({cost, item} -> boolean)) :: {cost, item}
   def shortest_path(start, neighbors_fn, finish_condition) do
-    pq = PriorityQueue.new() |> PriorityQueue._in(0, start)
+    pq = Heap.new() |> Heap.push({0, start})
     visited = MapSet.new()
 
     Stream.unfold({pq, visited}, fn {queue, visited} ->
-      {current_cost, node, queue} = PriorityQueue.out(queue)
+      {{current_cost, node}, queue} = Heap.split(queue)
 
       if MapSet.member?(visited, node) do
         {nil, {queue, visited}}
@@ -64,7 +74,7 @@ defmodule Dijkstra do
           for {neighbor, cost} <- neighbors_fn.(node),
               !MapSet.member?(visited, neighbor),
               reduce: queue do
-            pq -> PriorityQueue._in(pq, cost + current_cost, neighbor)
+            h -> Heap.push(h, {cost + current_cost, neighbor})
           end
 
         visited = MapSet.put(visited, node)
