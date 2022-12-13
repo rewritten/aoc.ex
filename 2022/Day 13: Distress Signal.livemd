@@ -1,6 +1,7 @@
 # Day 13: Distress Signal
 
 ```elixir
+Mix.install([:jason])
 text = File.read!("Code/aoc.ex/input/2022/13.txt")
 ```
 
@@ -55,7 +56,7 @@ example = """
 signals =
   text
   |> String.split("\n", trim: true)
-  |> Enum.map(fn l -> l |> Code.eval_string() |> elem(0) end)
+  |> Enum.map(&Jason.decode!/1)
 ```
 
 ```elixir
@@ -76,5 +77,4 @@ twos = Enum.find_index(sorted, &match?([[2]], &1))
 sixes = Enum.find_index(sorted, &match?([[6]], &1))
 
 (twos + 1) * (sixes + 1)
-# sorted
 ```
