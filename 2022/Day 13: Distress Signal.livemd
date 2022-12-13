@@ -1,0 +1,80 @@
+# Day 13: Distress Signal
+
+```elixir
+text = File.read!("Code/aoc.ex/input/2022/13.txt")
+```
+
+## Distress Signal
+
+```elixir
+defmodule DistressSignal do
+  def compare([], _), do: :lt
+  def compare(_, []), do: :gt
+  def compare(a, a), do: :eq
+  def compare([a | as], [a | bs]), do: compare(as, bs)
+  def compare(a, b) when is_integer(a) and is_integer(b) and a < b, do: :lt
+  def compare(a, b) when is_integer(a) and is_integer(b) and a > b, do: :gt
+  def compare(a, b) when is_integer(a) and is_list(b), do: compare([a], b)
+  def compare(a, b) when is_integer(b) and is_list(a), do: compare(a, [b])
+
+  def compare([a | as], [b | bs]) do
+    with :eq <- compare(a, b), do: compare(as, bs)
+  end
+end
+```
+
+```elixir
+example = """
+[1,1,3,1,1]
+[1,1,5,1,1]
+
+[[1],[2,3,4]]
+[[1],4]
+
+[9]
+[[8,7,6]]
+
+[[4,4],4,4]
+[[4,4],4,4,4]
+
+[7,7,7,7]
+[7,7,7]
+
+[]
+[3]
+
+[[[]]]
+[[]]
+
+[1,[2,[3,[4,[5,6,7]]]],8,9]
+[1,[2,[3,[4,[5,6,0]]]],8,9]
+"""
+```
+
+```elixir
+signals =
+  text
+  |> String.split("\n", trim: true)
+  |> Enum.map(fn l -> l |> Code.eval_string() |> elem(0) end)
+```
+
+```elixir
+signals
+|> Enum.chunk_every(2)
+|> Enum.with_index(1)
+|> Enum.filter(fn {pair, _} ->
+  pair == Enum.sort(pair, DistressSignal)
+end)
+|> Enum.map(&elem(&1, 1))
+|> Enum.sum()
+```
+
+```elixir
+sorted = Enum.sort([[[2]], [[6]] | signals], DistressSignal)
+
+twos = Enum.find_index(sorted, &match?([[2]], &1))
+sixes = Enum.find_index(sorted, &match?([[6]], &1))
+
+(twos + 1) * (sixes + 1)
+# sorted
+```
