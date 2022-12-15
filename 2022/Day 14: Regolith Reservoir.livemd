@@ -1,0 +1,76 @@
+# Day 14: Regolith Reservoir
+
+```elixir
+text = File.read!("Code/aoc.ex/input/2022/14.txt")
+```
+
+## Regolith Reservoir
+
+```elixir
+example = """
+498,4 -> 498,6 -> 496,6
+503,4 -> 502,4 -> 502,9 -> 494,9
+"""
+```
+
+```elixir
+structure =
+  for line <- String.split(text, "\n", trim: true) do
+    points =
+      for p <- String.split(line, " -> ") do
+        for c <- String.split(p, ","), do: String.to_integer(c)
+      end
+
+    segments =
+      points
+      |> Enum.chunk_every(2, 1, :discard)
+      |> Enum.map(fn
+        [[x, py], [x, qy]] -> Enum.map(py..qy, &{x, &1})
+        [[px, y], [qx, y]] -> Enum.map(px..qx, &{&1, y})
+        [[px, py], [qx, _]] -> Enum.map(px..py, &{&1, &1 - px + qx})
+      end)
+
+    segments
+  end
+  |> List.flatten()
+  |> MapSet.new()
+
+structure_size = MapSet.size(structure)
+
+bottom = structure |> Enum.map(&elem(&1, 1)) |> Enum.max()
+```
+
+## Part One
+
+```elixir
+Stream.iterate({{500, 0}, structure}, fn {{x, y}, structure} ->
+  cond do
+    not MapSet.member?(structure, {x, y + 1}) -> {{x, y + 1}, structure}
+    not MapSet.member?(structure, {x - 1, y + 1}) -> {{x - 1, y + 1}, structure}
+    not MapSet.member?(structure, {x + 1, y + 1}) -> {{x + 1, y + 1}, structure}
+    true -> {{500, 0}, MapSet.put(structure, {x, y})}
+  end
+end)
+|> Enum.find(fn {{_, y}, _} -> y > bottom end)
+|> elem(1)
+|> MapSet.size()
+|> Kernel.-(structure_size)
+```
+
+## Part Two
+
+```elixir
+Stream.iterate({{500, 0}, structure}, fn {{x, y}, structure} ->
+  cond do
+    y == bottom + 1 -> {{500, 0}, MapSet.put(structure, {x, y})}
+    not MapSet.member?(structure, {x, y + 1}) -> {{x, y + 1}, structure}
+    not MapSet.member?(structure, {x - 1, y + 1}) -> {{x - 1, y + 1}, structure}
+    not MapSet.member?(structure, {x + 1, y + 1}) -> {{x + 1, y + 1}, structure}
+    true -> {{500, 0}, MapSet.put(structure, {x, y})}
+  end
+end)
+|> Enum.find(fn {_, sand} -> MapSet.member?(sand, {500, 0}) end)
+|> elem(1)
+|> MapSet.size()
+|> Kernel.-(structure_size)
+```
