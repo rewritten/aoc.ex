@@ -1,0 +1,254 @@
+# Day 15: Beacon Exclusion Zone
+
+```elixir
+text = File.read!("Code/aoc.ex/input/2022/15.txt")
+```
+
+## Beacon Exclusion Zone
+
+You feel the ground rumble again as the distress signal leads you to a
+large network of subterranean tunnels. You don't have time to search
+them all, but you don't need to: your pack contains a set of deployable
+*sensors* that you imagine were originally built to locate lost Elves.
+
+The sensors aren't very powerful, but that's okay; your handheld device
+indicates that you're close enough to the source of the distress signal
+to use them. You pull the emergency sensor system out of your pack, hit
+the big button on top, and the sensors zoom off down the tunnels.
+
+Once a sensor finds a spot it thinks will give it a good reading, it
+attaches itself to a hard surface and begins monitoring for the nearest
+signal source *beacon*. Sensors and beacons always exist at integer
+coordinates. Each sensor knows its own position and can *determine the
+position of a beacon precisely*; however, sensors can only lock on to
+the one beacon *closest to the sensor* as measured by the
+<a href="https://en.wikipedia.org/wiki/Taxicab_geometry"
+target="_blank">Manhattan distance</a>. (There is never a tie where two
+beacons are the same distance to a sensor.)
+
+It doesn't take long for the sensors to report back their positions and
+closest beacons (your puzzle input). For example:
+
+```
+Sensor at x=2, y=18: closest beacon is at x=-2, y=15
+Sensor at x=9, y=16: closest beacon is at x=10, y=16
+Sensor at x=13, y=2: closest beacon is at x=15, y=3
+Sensor at x=12, y=14: closest beacon is at x=10, y=16
+Sensor at x=10, y=20: closest beacon is at x=10, y=16
+Sensor at x=14, y=17: closest beacon is at x=10, y=16
+Sensor at x=8, y=7: closest beacon is at x=2, y=10
+Sensor at x=2, y=0: closest beacon is at x=2, y=10
+Sensor at x=0, y=11: closest beacon is at x=2, y=10
+Sensor at x=20, y=14: closest beacon is at x=25, y=17
+Sensor at x=17, y=20: closest beacon is at x=21, y=22
+Sensor at x=16, y=7: closest beacon is at x=15, y=3
+Sensor at x=14, y=3: closest beacon is at x=15, y=3
+Sensor at x=20, y=1: closest beacon is at x=15, y=3
+```
+
+So, consider the sensor at `2,18`; the closest beacon to it is at
+`-2,15`. For the sensor at `9,16`, the closest beacon to it is at
+`10,16`.
+
+Drawing sensors as `S` and beacons as `B`, the above arrangement of
+sensors and beacons looks like this:
+
+```
+               1    1    2    2
+     0    5    0    5    0    5
+ 0 ....S.......................
+ 1 ......................S.....
+ 2 ...............S............
+ 3 ................SB..........
+ 4 ............................
+ 5 ............................
+ 6 ............................
+ 7 ..........S.......S.........
+ 8 ............................
+ 9 ............................
+10 ....B.......................
+11 ..S.........................
+12 ............................
+13 ............................
+14 ..............S.......S.....
+15 B...........................
+16 ...........SB...............
+17 ................S..........B
+18 ....S.......................
+19 ............................
+20 ............S......S........
+21 ............................
+22 .......................B....
+```
+
+This isn't necessarily a comprehensive map of all beacons in the area,
+though. Because each sensor only identifies its closest beacon, if a
+sensor detects a beacon, you know there are no other beacons that close
+or closer to that sensor. There could still be beacons that just happen
+to not be the closest beacon to any sensor. Consider the sensor at
+`8,7`:
+
+```
+               1    1    2    2
+     0    5    0    5    0    5
+-2 ..........#.................
+-1 .........###................
+ 0 ....S...#####...............
+ 1 .......#######........S.....
+ 2 ......#########S............
+ 3 .....###########SB..........
+ 4 ....#############...........
+ 5 ...###############..........
+ 6 ..#################.........
+ 7 .#########S#######S#........
+ 8 ..#################.........
+ 9 ...###############..........
+10 ....B############...........
+11 ..S..###########............
+12 ......#########.............
+13 .......#######..............
+14 ........#####.S.......S.....
+15 B........###................
+16 ..........#SB...............
+17 ................S..........B
+18 ....S.......................
+19 ............................
+20 ............S......S........
+21 ............................
+22 .......................B....
+```
+
+This sensor's closest beacon is at `2,10`, and so you know there are no
+beacons that close or closer (in any positions marked `#`).
+
+None of the detected beacons seem to be producing the distress signal,
+so you'll need to <span
+title="&quot;When you have eliminated all which is impossible, then whatever remains, however improbable, must be where the missing beacon is.&quot; - Sherlock Holmes">work
+out</span> where the distress beacon is by working out where it *isn't*.
+For now, keep things simple by counting the positions where a beacon
+cannot possibly be along just a single row.
+
+So, suppose you have an arrangement of beacons and sensors like in the
+example above and, just in the row where `y=10`, you'd like to count the
+number of positions a beacon cannot possibly exist. The coverage from
+all sensors near that row looks like this:
+
+```
+                 1    1    2    2
+       0    5    0    5    0    5
+ 9 ...#########################...
+10 ..####B######################..
+11 .###S#############.###########.
+```
+
+In this example, in the row where `y=10`, there are *`26`* positions
+where a beacon cannot be present.
+
+Consult the report from the sensors you just deployed. *In the row where
+`y=2000000`, how many positions cannot contain a beacon?*
+
+To begin, <a href="15/input" target="_blank">get your puzzle input</a>.
+
+```elixir
+example = """
+Sensor at x=2, y=18: closest beacon is at x=-2, y=15
+Sensor at x=9, y=16: closest beacon is at x=10, y=16
+Sensor at x=13, y=2: closest beacon is at x=15, y=3
+Sensor at x=12, y=14: closest beacon is at x=10, y=16
+Sensor at x=10, y=20: closest beacon is at x=10, y=16
+Sensor at x=14, y=17: closest beacon is at x=10, y=16
+Sensor at x=8, y=7: closest beacon is at x=2, y=10
+Sensor at x=2, y=0: closest beacon is at x=2, y=10
+Sensor at x=0, y=11: closest beacon is at x=2, y=10
+Sensor at x=20, y=14: closest beacon is at x=25, y=17
+Sensor at x=17, y=20: closest beacon is at x=21, y=22
+Sensor at x=16, y=7: closest beacon is at x=15, y=3
+Sensor at x=14, y=3: closest beacon is at x=15, y=3
+Sensor at x=20, y=1: closest beacon is at x=15, y=3
+"""
+
+example_y = 10
+y = 2_000_000
+```
+
+```elixir
+defmodule RangeCollapser do
+  def collapse([]), do: []
+
+  def collapse([first_a..last_a//1, first_b..last_b//1 | rest]) when last_a >= first_b - 1,
+    do: collapse([first_a..max(last_a, last_b) | rest])
+
+  def collapse([h | rest]), do: [h | collapse(rest)]
+
+  @doc """
+  assume both lists are sorted and ranges are disjoint
+  """
+  def remove(ranges, points)
+
+  def remove(ranges, []), do: ranges
+  def remove([], _), do: []
+  def remove([f.._ | _] = rs, [p | ps]) when p < f, do: remove(rs, ps)
+  def remove([_..l = r | rs], [p | _] = ps) when p > l, do: [r | remove(rs, ps)]
+  def remove([p..p | rs], [p | ps]), do: remove(rs, ps)
+  def remove([p..l | rs], [p | ps]), do: remove([(p + 1)..l | rs], ps)
+  def remove([f..p | rs], [p | ps]), do: remove([f..(p - 1) | rs], ps)
+  def remove([f..l | rs], [p | ps]), do: remove([f..(p - 1), (p + 1)..l | rs], ps)
+end
+```
+
+```elixir
+measurements =
+  text
+  |> String.split(~r|[^0-9-]|, trim: true)
+  |> Enum.map(&String.to_integer/1)
+  |> Enum.chunk_every(4)
+```
+
+```elixir
+beacons = for [_, _, x, y] <- measurements, uniq: true, do: {x, y}
+```
+
+```elixir
+spanned = Enum.sort(for [a, b, c, d] <- measurements, do: {{a, b}, abs(a - c) + abs(b - d)})
+```
+
+```elixir
+# {text, y} = {example, example_y}
+
+beacons_on_y = Enum.sort(for {x, ^y} <- beacons, uniq: true, do: x)
+
+4_748_135 =
+  for {{sx, sy}, d} <- spanned, dy = abs(sy - y), d >= dy do
+    (sx - d + dy)..(sx + d - dy)
+  end
+  |> Enum.sort()
+  |> RangeCollapser.collapse()
+  |> RangeCollapser.remove(beacons_on_y)
+  |> Enum.map(&Range.size/1)
+  |> Enum.sum()
+```
+
+```elixir
+rays =
+  for {{x, y}, d} <- spanned,
+      op <- [:+, :-],
+      boundary <- [d + 1, -d - 1],
+      do: {op, apply(Kernel, op, [x, y]) + boundary}
+
+common_rays =
+  rays
+  |> Enum.frequencies()
+  |> Map.filter(&match?({_, n} when n > 1, &1))
+  |> Map.keys()
+  |> Enum.group_by(&elem(&1, 0), &elem(&1, 1))
+
+[{x, y}] =
+  for sum <- common_rays[:+],
+      diff <- common_rays[:-],
+      x = div(sum + diff, 2),
+      y = div(sum - diff, 2),
+      Enum.all?(spanned, fn {{sx, sy}, d} -> abs(sx - x) + abs(sy - y) > d end),
+      do: {x, y}
+
+13_743_542_639_657 = x * 4_000_000 + y
+```
