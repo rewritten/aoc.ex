@@ -41,8 +41,6 @@ Valve JJ has flow rate=21; tunnel leads to valve II
 ```
 
 ```elixir
-# text = example
-
 data =
   for line <- String.split(text, "\n", trim: true),
       {:ok, parsed, _, _, _, _} = Parser.line(line),
@@ -116,60 +114,43 @@ all_distances_from =
 ```
 
 ```elixir
-paths = fn max_time ->
-  initial = %{p: ["AA"], t: max_time, flow: 0, total: 0}
-  queue = :queue.new()
-  queue = :queue.in(initial, queue)
+# dynp
 
-  Stream.resource(
-    fn -> queue end,
-    fn queue ->
-      case :queue.out(queue) do
-        {:empty, _} ->
-          {:halt, nil}
+defmodule ProboscideaVolcanium do
+  def paths(starting, other_nodes, remaining_time, flows, distances) do
+    f = remaining_time * flows[starting]
+    no_move = %{p: [starting], t: 0, total: f}
 
-        {{:value, current}, next} ->
-          %{p: [h | t], t: time} = current
+    other_moves =
+      for q <- other_nodes,
+          d = distances[starting][q],
+          d < remaining_time,
+          remaining = List.delete(other_nodes, q),
+          path <- paths(q, remaining, remaining_time - d - 1, flows, distances),
+          do: %{path | p: [starting | path.p], total: f + path.total}
 
-          opened = %{
-            current
-            | t: time - 1,
-              flow: current.flow + flows[h],
-              total: current.total + current.flow
-          }
-
-          next_paths =
-            for {q, d} <- all_distances_from[h], d < time, q not in t do
-              new_p = [q, h | t]
-              new_t = opened.t - d
-              %{opened | p: new_p, t: new_t, total: opened.total + d * opened.flow}
-            end
-
-          new_flow = opened.flow + flows[hd(opened.p)]
-          new_total = opened.total + (opened.t + 1) * opened.flow
-          finished = %{opened | flow: new_flow, total: new_total}
-
-          {[finished], Enum.reduce(next_paths, next, &:queue.in/2)}
-      end
-    end,
-    & &1
-  )
+    [no_move | other_moves]
+  end
 end
 ```
 
 ## Part One
 
 ```elixir
-%{total: best_strategy_for_part_1} = Enum.max_by(paths.(30), & &1.total)
+%{total: best_strategy_for_part_1} =
+  "AA"
+  |> ProboscideaVolcanium.paths(nodes -- ["AA"], 30, flows, all_distances_from)
+  |> Enum.max_by(& &1.total)
 ```
 
 ## Part Two
 
 ```elixir
 p26 =
-  paths.(26)
+  "AA"
+  |> ProboscideaVolcanium.paths(nodes -- ["AA"], 26, flows, all_distances_from)
   |> Enum.reduce(%{}, fn x, acc ->
-    Map.update(acc, MapSet.new(x.p -- ["AA"]), x.total, &max(&1, x.total))
+    Map.update(acc, Enum.sort(x.p -- ["AA"]), x.total, &max(&1, x.total))
   end)
 ```
 
@@ -178,7 +159,8 @@ Enum.max(
   for {p, c} <- p26,
       {ep, ec} <- p26,
       c + ec > best_strategy_for_part_1,
-      MapSet.disjoint?(p, ep),
+      p -- ep == p,
+      ep -- p == ep,
       do: c + ec
 )
 ```
