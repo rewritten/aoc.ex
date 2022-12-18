@@ -1,0 +1,131 @@
+# Day 18: Boiling Boulders
+
+```elixir
+Mix.install([:nimble_parsec])
+
+defmodule Parser do
+  import NimbleParsec
+
+  line =
+    integer(min: 1) |> times(ignore(string(",")) |> integer(min: 1), 2) |> ignore(string("\n"))
+
+  defparsec(:input, repeat(wrap(line)))
+end
+
+input = File.read!("Code/aoc.ex/input/2022/18.txt")
+```
+
+## Boiling Boulders
+
+```elixir
+example = """
+2,2,2
+1,2,2
+3,2,2
+2,1,2
+2,3,2
+2,2,1
+2,2,3
+2,2,4
+2,2,6
+1,2,5
+3,2,5
+2,1,5
+2,3,5
+"""
+```
+
+Consider each point as an isolated piece of lava for now. For the sake of easy membership 
+we use a set.
+
+```elixir
+data =
+  input
+  # example
+  |> Parser.input()
+  |> elem(1)
+  |> Enum.map(&MapSet.new([&1]))
+```
+
+Precompile all the neighbors for each point in the relevant area (there are around 10_000 of them).
+
+Then define a recursive function that takes a list of slabs, and merges the slabs into 
+continuous pieces.
+
+* If the first slab is connected with any of the other ones, we merge them (reducing the lenght of the list) and call recursively.
+* Otherwise, the first slab is already isolated, so we do recursion on the rest of slabs.
+
+The surface of a slab is the count, for each cell, of the neighbors not in the slab.
+
+```elixir
+defmodule BoilingBoulders do
+  @neighbors for x <- 0..21,
+                 y <- 0..21,
+                 z <- 0..21,
+                 into: %{},
+                 do:
+                   {[x, y, z],
+                    [
+                      [x - 1, y, z],
+                      [x + 1, y, z],
+                      [x, y - 1, z],
+                      [x, y + 1, z],
+                      [x, y, z - 1],
+                      [x, y, z + 1]
+                    ]}
+
+  def recunion([]), do: []
+  def recunion([set]), do: [set]
+
+  def recunion([h | t]) do
+    to_match = h |> Enum.flat_map(fn p -> @neighbors[p] end) |> MapSet.new()
+
+    case Enum.split_with(t, fn other -> MapSet.disjoint?(other, to_match) end) do
+      {t, []} -> [h | recunion(t)]
+      {non, int} -> recunion([Enum.reduce([h | int], &MapSet.union/2) | non])
+    end
+  end
+
+  def nei(b), do: @neighbors[b]
+
+  def area(set) do
+    Enum.sum(for p <- set, do: p |> nei() |> Enum.count(&(&1 not in set)))
+  end
+end
+```
+
+As the slabs are not connected, the total area is just the sum of the areas.
+
+```elixir
+import ExUnit.Assertions
+
+exact_surface_area =
+  data
+  |> BoilingBoulders.recunion()
+  |> Enum.map(&BoilingBoulders.area/1)
+  |> Enum.reduce(&+/2)
+
+assert 4390 = exact_surface_area
+```
+
+The complement of the slabs can also be split into unconnected parts. Apply the same procedure,
+but remove any "air bubble" that is actually on the outside (having one of the coordinates either
+0 or 21).
+
+The surface of the enclosed air bubbles is the overcounted surface from before.
+
+```elixir
+all_lava = Enum.reduce(data, &MapSet.union/2)
+
+air =
+  for x <- 0..21, y <- 0..21, z <- 0..21, [x, y, z] not in all_lava, do: MapSet.new([[x, y, z]])
+
+free_surface_area =
+  air
+  |> BoilingBoulders.recunion()
+  |> Enum.reject(fn s -> Enum.any?(s, &(0 in &1 or 21 in &1)) end)
+  |> Enum.map(&BoilingBoulders.area/1)
+  |> Enum.reduce(exact_surface_area, &(&2 - &1))
+
+assert 2534 = free_surface_area
+```
