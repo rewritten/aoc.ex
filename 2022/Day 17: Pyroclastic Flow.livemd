@@ -1,0 +1,166 @@
+# Day 17: Pyroclastic Flow
+
+```elixir
+text = File.read!("Code/aoc.ex/input/2022/17.txt")
+```
+
+## Pyroclastic Flow
+
+A simple state-machine to let rocks fall down
+
+```elixir
+defmodule PyroclasticFlow do
+  @rocks [
+    [{0, 0}, {1, 0}, {2, 0}, {3, 0}],
+    [{2, 1}, {1, 0}, {1, 1}, {1, 2}, {0, 1}],
+    [{2, 2}, {2, 1}, {0, 0}, {1, 0}, {2, 0}],
+    [{0, 3}, {0, 2}, {0, 1}, {0, 0}],
+    [{1, 0}, {1, 1}, {0, 0}, {0, 1}]
+  ]
+
+  def go(rocks, original_jets) do
+    rocks = @rocks |> Stream.cycle() |> Enum.take(rocks)
+
+    %{
+      chamber: MapSet.new(),
+      height: 0,
+      rocks: rocks,
+      current_rock: nil,
+      jets: original_jets,
+      state: :place
+    }
+    |> Stream.iterate(fn
+      %{state: :place, rocks: [h | t]} = state ->
+        current_rock = for {x, y} <- h, do: {x + 2, y + state.height + 3}
+
+        %{state | rocks: t, current_rock: current_rock, state: :blow}
+
+      %{state: :blow, chamber: chamber, current_rock: rock, jets: jets} = state ->
+        [h | t] = if jets == [], do: original_jets, else: jets
+        new_state = %{state | jets: t, state: :fall}
+
+        moved =
+          case h do
+            ?< -> for {x, y} <- rock, do: {x - 1, y}
+            ?> -> for {x, y} <- rock, do: {x + 1, y}
+          end
+
+        if Enum.any?(moved, fn {x, y} -> x < 0 or x > 6 or {x, y} in chamber end),
+          do: new_state,
+          else: %{new_state | current_rock: moved}
+
+      %{state: :fall, current_rock: rock} = state ->
+        moved = for {x, y} <- rock, do: {x, y - 1}
+
+        cond do
+          Enum.any?(moved, fn {_, y} -> y < 0 end) ->
+            %{state | state: :fuse}
+
+          Enum.any?(moved, fn {x, y} -> {x, y} in state.chamber end) ->
+            %{state | state: :fuse}
+
+          true ->
+            %{state | current_rock: moved, state: :blow}
+        end
+
+      %{state: :fuse, chamber: chamber, current_rock: rock} = state ->
+        chamber = rock |> MapSet.new() |> MapSet.union(chamber)
+        height = Enum.max(for {_, y} <- chamber, do: y + 1)
+        %{state | chamber: chamber, current_rock: nil, height: height, state: :place}
+    end)
+    |> Stream.filter(&match?(%{current_rock: nil}, &1))
+  end
+end
+```
+
+```elixir
+original_jets = text |> String.trim() |> String.to_charlist()
+```
+
+## Part One
+
+Just let it roll, it takes 0.3 s :)
+
+```elixir
+2022
+|> PyroclasticFlow.go(original_jets)
+|> Enum.find(&match?(%{rocks: [], current_rock: nil}, &1))
+|> then(& &1.height)
+
+# => 3098
+```
+
+## Part Two
+
+There is no way to drop one trillion stones, so we need to find out when the configuration
+repeats.
+
+First we find out the changes in heights for each subsequent stone. This will be a list of
+numbers among `0..4`. A long enough repetition in the height changes is a very good indicator
+of periodicity.
+
+This is the strategy:
+
+* Find out all the height changes for the first 10_000 drops.
+* Discard an initial segment as it is polluted by the ground.
+* Given the other 8_000 differences, find the longest tail that is equal to an initial segment.
+  If the difference in length is short enough (< 2000) then it is very likely a period.
+* The difference in length is the number of stones that complete a cycle
+* The difference in sums (of the stone-by-stone height diffs) is the height of each period
+* Now find a good enough starting point (same remainder as `1_000_000_000_000` modulo the
+  period, high enough so ground does not affect) and compute the actual height
+* Finally sum N times the height of each cycle....
+
+Store the height differences to prepare to find cycles. This takes a while (~6 seconds) as it
+drops 10_000 rocks!
+
+```elixir
+heights =
+  10_000
+  |> PyroclasticFlow.go(original_jets)
+  |> Stream.take_while(&match?(%{rocks: [_ | _]}, &1))
+  |> Stream.map(& &1.height)
+  |> Stream.chunk_every(2, 1, :discard)
+  |> Stream.map(fn [a, b] -> b - a end)
+  |> Enum.to_list()
+```
+
+Discard the initial segment (which is not regular because it starts from a flat surface), and
+find a tail that is equal.
+
+As we have the stone-by-stone differences, the height difference in every period is just the
+difference in height increases between the full 10_000 rocks (except for the initial segment)
+and the second copy.
+
+```elixir
+tail = heights |> Enum.drop(2000)
+
+final =
+  tail
+  |> Stream.iterate(&tl/1)
+  |> Enum.find(fn fin -> fin != tail && fin == Enum.take(tail, length(fin)) end)
+
+delta = Enum.sum(tail) - Enum.sum(final)
+#  2616
+period = length(tail) - length(final)
+# 1715
+```
+
+After throwing `rem(1_000_000_000_000, period)` rocks and another full cycle of `period` rocks,
+we can just assume that the rest will follow the periodicity.
+
+```elixir
+remainder = rem(1_000_000_000_000, period)
+
+initial_segment = remainder + period
+
+initial_height =
+  initial_segment
+  |> PyroclasticFlow.go(original_jets)
+  |> Enum.find(&match?(%{rocks: [], current_rock: nil}, &1))
+  |> then(& &1.height)
+
+total_height = div(1_000_000_000_000 - initial_segment, period) * delta + initial_height
+
+# 1525364431487
+```
