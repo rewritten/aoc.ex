@@ -1,0 +1,227 @@
+# Day 19: Not Enough Minerals
+
+```elixir
+Mix.install([:nimble_parsec])
+
+text = File.read!("Code/aoc.ex/input/2022/19.txt")
+
+defmodule Parser do
+  import NimbleParsec
+
+  blueprint = times(eventually(integer(min: 1)), 7)
+
+  defparsec(:input, repeat(wrap(blueprint)))
+
+  def parse(text) do
+    for [i, a, b, c, d, e, f] <- input(text) |> elem(1) do
+      %{
+        index: i,
+        cost: %{
+          ore: %{ore: a},
+          clay: %{ore: b},
+          obsidian: %{ore: c, clay: d},
+          geode: %{ore: e, obsidian: f}
+        }
+      }
+    end
+  end
+end
+
+data = Parser.parse(text)
+
+example = """
+Blueprint 1:
+  Each ore robot costs 4 ore.
+  Each clay robot costs 2 ore.
+  Each obsidian robot costs 3 ore and 14 clay.
+  Each geode robot costs 2 ore and 7 obsidian.
+
+Blueprint 2:
+  Each ore robot costs 2 ore.
+  Each clay robot costs 3 ore.
+  Each obsidian robot costs 3 ore and 8 clay.
+  Each geode robot costs 3 ore and 12 obsidian.
+"""
+
+example_data = Parser.parse(example)
+```
+
+## Not Enough Minerals
+
+```elixir
+defmodule N1 do
+  @initial_bots {1, 0, 0, 0}
+  @initial_reserve {0, 0, 0, 0}
+
+  def start(costs, t) do
+    bots = @initial_bots
+    reserve = @initial_reserve
+    work(0, bots, reserve, costs, t)
+  end
+
+  def work(mx, bots, reserve, costs, 0) do
+    do_work(mx, nil, bots, reserve, costs, 0)
+  end
+
+  def work(mx, bots, reserve, costs, t) do
+    mx
+    |> do_work(:geode, bots, reserve, costs, t)
+    |> do_work(:obsidian, bots, reserve, costs, t)
+    |> do_work(:clay, bots, reserve, costs, t)
+    |> do_work(:ore, bots, reserve, costs, t)
+    |> do_work(nil, bots, reserve, costs, t)
+  end
+
+  # do nothing
+  def do_work(mx, nil, {_, _, _, bots}, {_, _, _, reserve}, _, t), do: max(mx, reserve + bots * t)
+
+  # not enough obsidian production to get a geode bot in time
+  def do_work(mx, :geode, {_, _, b, _}, {_, _, r, _}, %{geode: %{obsidian: c}}, t)
+      when b * (t - 2) + r < c,
+      do: mx
+
+  # not enough ore production to get a geode bot in time
+  def do_work(mx, :geode, {b, _, _, _}, {r, _, _, _}, %{geode: %{ore: c}}, t)
+      when b * (t - 2) + r < c,
+      do: mx
+
+  # not enough clay production to get an obsidian bot in time
+  def do_work(mx, :obsidian, {_, b, _, _}, {_, r, _, _}, %{obsidian: %{clay: c}}, t)
+      when b * (t - 2) + r < c,
+      do: mx
+
+  # not enough ore production to get an obsidian bot in time
+  def do_work(mx, :obsidian, {b, _, _, _}, {r, _, _, _}, %{obsidian: %{ore: c}}, t)
+      when b * (t - 2) + r < c,
+      do: mx
+
+  # not enough ore production to get a clay bot in time
+  def do_work(mx, :clay, {b, _, _, _}, {r, _, _, _}, %{clay: %{ore: c}}, t)
+      when b * (t - 2) + r < c,
+      do: mx
+
+  # not enough ore production to get an ore bot in time
+  def do_work(mx, :ore, {b, _, _, _}, {r, _, _, _}, %{ore: %{ore: c}}, t)
+      when b * (t - 2) + r < c,
+      do: mx
+
+  # no more obsidian bots needed
+  def do_work(mx, :obsidian, {_, _, b, _}, _, %{geode: %{obsidian: c}}, _)
+      when b >= c,
+      do: mx
+
+  # no more clay bots needed
+  def do_work(mx, :clay, {_, b, _, _}, _, %{obsidian: %{clay: c}}, _)
+      when b >= c,
+      do: mx
+
+  # no more ore bots needed
+  def do_work(mx, :ore, {b, _, _, _}, _, c, _)
+      when b >= c.clay.ore and b >= c.obsidian.ore and b >= c.geode.ore,
+      do: mx
+
+  def do_work(mx, :geode, bots, reserve, costs, t) do
+    {ore_bots, clay_bots, obsidian_bots, geode_bots} = bots
+    {ore_reserve, clay_reserve, obsidian_reserve, geode_reserve} = reserve
+    %{geode: %{ore: ore_cost, obsidian: obsidian_cost}} = costs
+
+    t_needed =
+      0
+      |> max(div(ore_cost - ore_reserve + ore_bots - 1, ore_bots))
+      |> max(div(obsidian_cost - obsidian_reserve + obsidian_bots - 1, obsidian_bots))
+      |> Kernel.+(1)
+
+    reserve = {
+      ore_reserve + t_needed * ore_bots - ore_cost,
+      clay_reserve + t_needed * clay_bots,
+      obsidian_reserve + t_needed * obsidian_bots - obsidian_cost,
+      geode_reserve + t_needed * geode_bots
+    }
+
+    bots = {ore_bots, clay_bots, obsidian_bots, geode_bots + 1}
+
+    work(mx, bots, reserve, costs, t - t_needed)
+  end
+
+  def do_work(mx, :obsidian, bots, reserve, costs, t) do
+    {ore_bots, clay_bots, obsidian_bots, geode_bots} = bots
+    {ore_reserve, clay_reserve, obsidian_reserve, geode_reserve} = reserve
+    %{obsidian: %{ore: ore_cost, clay: clay_cost}} = costs
+
+    t_needed =
+      0
+      |> max(div(ore_cost - ore_reserve + ore_bots - 1, ore_bots))
+      |> max(div(clay_cost - clay_reserve + clay_bots - 1, clay_bots))
+      |> Kernel.+(1)
+
+    reserve = {
+      ore_reserve + t_needed * ore_bots - ore_cost,
+      clay_reserve + t_needed * clay_bots - clay_cost,
+      obsidian_reserve + t_needed * obsidian_bots,
+      geode_reserve + t_needed * geode_bots
+    }
+
+    bots = {ore_bots, clay_bots, obsidian_bots + 1, geode_bots}
+
+    work(mx, bots, reserve, costs, t - t_needed)
+  end
+
+  def do_work(mx, :clay, bots, reserve, costs, t) do
+    {ore_bots, clay_bots, obsidian_bots, geode_bots} = bots
+    {ore_reserve, clay_reserve, obsidian_reserve, geode_reserve} = reserve
+    %{clay: %{ore: ore_cost}} = costs
+
+    t_needed =
+      0
+      |> max(div(ore_cost - ore_reserve + ore_bots - 1, ore_bots))
+      |> Kernel.+(1)
+
+    reserve = {
+      ore_reserve + t_needed * ore_bots - ore_cost,
+      clay_reserve + t_needed * clay_bots,
+      obsidian_reserve + t_needed * obsidian_bots,
+      geode_reserve + t_needed * geode_bots
+    }
+
+    bots = {ore_bots, clay_bots + 1, obsidian_bots, geode_bots}
+
+    work(mx, bots, reserve, costs, t - t_needed)
+  end
+
+  def do_work(mx, :ore, bots, reserve, costs, t) do
+    {ore_bots, clay_bots, obsidian_bots, geode_bots} = bots
+    {ore_reserve, clay_reserve, obsidian_reserve, geode_reserve} = reserve
+    %{ore: %{ore: ore_cost}} = costs
+
+    t_needed =
+      0
+      |> max(div(ore_cost - ore_reserve + ore_bots - 1, ore_bots))
+      |> Kernel.+(1)
+
+    reserve = {
+      ore_reserve + t_needed * ore_bots - ore_cost,
+      clay_reserve + t_needed * clay_bots,
+      obsidian_reserve + t_needed * obsidian_bots,
+      geode_reserve + t_needed * geode_bots
+    }
+
+    bots = {ore_bots + 1, clay_bots, obsidian_bots, geode_bots}
+
+    work(mx, bots, reserve, costs, t - t_needed)
+  end
+end
+```
+
+```elixir
+Enum.sum(for %{index: i, cost: c} <- data, do: N1.start(c, 24) * i)
+```
+
+```elixir
+for %{index: i, cost: c} <- data, i < 4 do
+  Task.async(fn -> N1.start(c, 32) end)
+end
+|> Task.await_many(40_000)
+|> Enum.reduce(&*/2)
+
+# using concurrent tasks saves 20% of time
+```
